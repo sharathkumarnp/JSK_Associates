@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JSK Associates – Order Form</title>
+  <style>
+    :root{
+      --primary:#0F62FE;
+      --accent:#4CAF50;
+      --bg:#f7f8fa;
+      --text:#111827;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+    }
+    *{box-sizing:border-box}
+    body{font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; margin:0; background:var(--bg); color:var(--text)}
+    .container{max-width:960px; margin:24px auto 64px; background:#fff; border:1px solid var(--border); border-radius:16px; box-shadow:0 10px 24px rgba(0,0,0,.06)}
+    header{padding:20px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:16px}
+    .logoBox{display:flex; align-items:center; gap:16px}
+    .logoImg{width:56px; height:56px; object-fit:contain}
+    .fallbackLogo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--primary),#6ee7b7); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800}
+    h1{margin:0; font-size:22px}
+    .meta{color:var(--muted); font-size:14px}
+    main{padding:24px}
+    .grid{display:grid; grid-template-columns: repeat(2, 1fr); gap:16px}
+    label{font-size:12px; color:var(--muted); display:block; margin-bottom:6px}
+    input, select, textarea{width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:#fff; font-size:14px}
+    textarea{min-height:88px; resize:vertical}
+    .section{margin-top:20px}
+    .section-title{font-weight:700; font-size:16px; margin:4px 0 12px}
+    table{width:100%; border-collapse: collapse; border:1px solid var(--border); border-radius:12px; overflow:hidden}
+    thead th{background:#fafafa; font-size:12px; color:var(--muted); text-align:left; padding:10px; border-bottom:1px solid var(--border)}
+    tbody td{padding:8px; border-bottom:1px solid var(--border)}
+    .qty, .rate, .total{max-width:120px}
+    .actions{display:flex; gap:12px; margin-top:16px; flex-wrap:wrap}
+    .btn{border:none; border-radius:10px; padding:10px 14px; font-weight:600; cursor:pointer}
+    .btn-primary{background:var(--primary); color:#fff}
+    .btn-accent{background:var(--accent); color:#fff}
+    .btn-ghost{background:#fff; color:var(--text); border:1px solid var(--border)}
+
+    .totals{display:flex; justify-content:flex-end; gap:16px; align-items:center; margin-top:12px}
+    .grand{font-size:18px; font-weight:800}
+    .muted{color:var(--muted)}
+    .right{ text-align:right }
+    .nowrap{ white-space:nowrap }
+
+    /* Invoice Modal */
+    .modal{position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; padding:16px; z-index:9999}
+    .modal.open{display:flex}
+    .modalCard{width:min(900px, 96vw); background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,.25)}
+    .modalHeader{display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--border)}
+    .modalBody{padding:16px}
+
+    /* Invoice content */
+    .invHead{display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:8px}
+    .invCompany{display:flex; gap:12px; align-items:flex-start}
+    .invLogo{width:56px; height:56px; object-fit:contain}
+    .invTitle{font-weight:800; font-size:18px}
+    .invSub{color:var(--muted); font-size:13px}
+    .invCols{display:flex; gap:24px; justify-content:space-between; flex-wrap:wrap; margin:6px 0 12px}
+    .infoBlock{min-width:260px}
+    .hr{height:1px; background:var(--border); margin:12px 0}
+    .invTable{width:100%; border-collapse: collapse; border:1px solid var(--border)}
+    .invTable th, .invTable td{border-bottom:1px solid var(--border); padding:8px}
+    .invTotals{display:flex; justify-content:flex-end; gap:12px; align-items:center; margin-top:8px}
+
+    @media print{
+      body{background:#fff}
+      .no-print{display:none !important}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logoBox">
+        <img id="companyLogoImg" class="logoImg" src="assets/logo.png" alt="Logo" onerror="this.style.display='none'; document.getElementById('fallbackLogo').style.display='flex';">
+        <div id="fallbackLogo" class="fallbackLogo" style="display:none">JSK</div>
+      </div>
+      <div>
+        <h1 id="companyName">JSK Associates</h1>
+        <div class="meta" id="companyDetails">Mekkunu • +91-934340-23423 • sales@example.com</div>
+      </div>
+    </header>
+
+    <main>
+      <div id="formView">
+        <div class="grid">
+          <div>
+            <label for="customerName">Customer Name</label>
+            <input required id="customerName" placeholder="Customer Name" />
+          </div>
+          <div>
+            <label for="contactNumber">Customer Contact Number</label>
+            <input required id="contactNumber" placeholder="Customer Contact Number" />
+          </div>
+          <div>
+            <label for="place">Place</label>
+            <input id="place" placeholder="City / Area" />
+          </div>
+          <div>
+            <label for="deliveryDateTime">Delivery Date & Time</label>
+            <input type="datetime-local" id="deliveryDateTime" />
+          </div>
+          <div>
+            <label for="paymentTerms">Payment Terms</label>
+            <select id="paymentTerms">
+              <option>Cash</option>
+              <option>Online Transfer</option>
+              <option>Credit</option>
+              <option>Card</option>
+            </select>
+          </div>
+          <div>
+            <label for="orderId">Order / Reference ID (optional)</label>
+            <input id="orderId" placeholder="Your internal reference" />
+          </div>
+          <div>
+            <label for="salesExecutive">Sales Executive</label>
+            <input id="salesExecutive" placeholder="Name of sales person" />
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Items</div>
+          <table id="itemsTable">
+            <thead>
+              <tr>
+                <th style="width:40%">Item Name / Description</th>
+                <th class="nowrap">QTY</th>
+                <th class="nowrap">Rate / Unit</th>
+                <th class="nowrap right">Line Total</th>
+                <th class="no-print"></th>
+              </tr>
+            </thead>
+            <tbody id="itemsBody"></tbody>
+          </table>
+          <div class="actions no-print">
+            <button class="btn btn-ghost" id="addRowBtn" type="button">+ Add item</button>
+            <span class="muted"></span>
+          </div>
+          <div class="totals">
+            <div class="muted">Grand Total</div>
+            <div class="grand" id="grandTotal">₹0.00</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Comments / Special Requests</div>
+          <textarea id="comments" placeholder="Write any special instructions, delivery notes, or requests..."></textarea>
+        </div>
+
+        <div class="actions no-print">
+          <button class="btn btn-primary" id="submitBtn" type="button">Submit to Google Sheet</button>
+          <button class="btn btn-accent" id="previewBtn" type="button">Preview Invoice</button>
+          <!-- <button class="btn btn-accent" id="printBtn" type="button">Print Invoice PDF</button> -->
+          <button class="btn btn-ghost" id="resetBtn" type="button">Reset</button>
+        </div>
+        <div class="muted no-print" style="margin-top:8px"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Invoice Modal -->
+  <div id="invoiceModal" class="modal no-print" aria-hidden="true">
+    <div class="modalCard">
+      <div class="modalHeader">
+        <strong>Invoice Preview</strong>
+        <div>
+          <button class="btn btn-ghost" id="closePreview">Close</button>
+          <button class="btn btn-accent" id="printFromPreview">Print</button>
+        </div>
+      </div>
+      <div class="modalBody" id="invoiceContent"></div>
+    </div>
+  </div>
+
+  <iframe id="printFrame" style="position:absolute; left:-9999px; width:0; height:0; border:0"></iframe>
+
+  <script>
+    const COMPANY = { name: "JSK Associates", details: "Moosa Peedika Road, Mekkunu • +91 95448 91890 • jskassociate24@gmail.com", short: "JSK" };
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwWkyAA_pu52gRbr4ybaps5hRVmy1cHB-LjqsSOCyo7oxqtRuD_gOS9WW591bW_eatdFQ/exec";
+    document.getElementById("companyName").textContent = COMPANY.name;
+    document.getElementById("companyDetails").textContent = COMPANY.details;
+    document.getElementById("fallbackLogo").textContent = COMPANY.short;
+
+    const fmtCurrency = (n) => new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:2}).format(isFinite(n)?Number(n):0);
+    const parseNum = (v) => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
+
+    const itemsBody = document.getElementById("itemsBody");
+    const grandTotalEl = document.getElementById("grandTotal");
+    const addRowBtn = document.getElementById("addRowBtn");
+    let rowCount = 0;
+
+    function createRow(){
+      const idx = ++rowCount;
+      const tr = document.createElement("tr");
+      tr.dataset.idx = idx;
+      tr.innerHTML = `
+        <td><input placeholder="Item name / description" name="itemName_${idx}" /></td>
+        <td class="qty"><input inputmode="decimal" name="qty_${idx}" placeholder="0" /></td>
+        <td class="rate"><input inputmode="decimal" name="rate_${idx}" placeholder="0.00" /></td>
+        <td class="total right"><input name="total_${idx}" placeholder="0.00" readonly /></td>
+        <td class="no-print right"><button type="button" class="btn btn-ghost" data-action="remove">✕</button></td>`;
+      const [nameEl, qtyEl, rateEl, totalEl] = tr.querySelectorAll("input");
+      function recalcLine(){
+        const total = parseNum(qtyEl.value) * parseNum(rateEl.value);
+        totalEl.value = total.toFixed(2);
+        recalcGrand();
+        if (tr === itemsBody.lastElementChild && (nameEl.value || qtyEl.value || rateEl.value)) createRow();
+      }
+      qtyEl.addEventListener("input", recalcLine);
+      rateEl.addEventListener("input", recalcLine);
+      nameEl.addEventListener("input", recalcLine);
+      tr.addEventListener("click", (e)=>{
+        if (e.target?.dataset?.action === "remove") {
+          const wasLast = tr === itemsBody.lastElementChild;
+          tr.remove(); recalcGrand();
+          if (!itemsBody.children.length) createRow();
+          else if (wasLast) {
+            const last = itemsBody.lastElementChild;
+            if (Array.from(last.querySelectorAll("input")).some(i=>i.value)) createRow();
+          }
+        }
+      });
+      itemsBody.appendChild(tr);
+    }
+    function recalcGrand(){
+      let grand=0;
+      itemsBody.querySelectorAll("tr").forEach(tr => grand += parseNum(tr.querySelector('input[name^="total_"]').value));
+      grandTotalEl.textContent = fmtCurrency(grand);
+    }
+    addRowBtn.addEventListener("click", ()=> createRow());
+    for (let i=0;i<3;i++) createRow();
+
+    document.getElementById("resetBtn").addEventListener("click", ()=>{
+      document.querySelectorAll("input, textarea, select").forEach(el=>{
+        if (el.type === "datetime-local") el.value = "";
+        else if (el.tagName === "SELECT") el.selectedIndex = 0;
+        else el.value = "";
+      });
+      itemsBody.innerHTML=""; rowCount=0; for (let i=0;i<3;i++) createRow(); recalcGrand();
+    });
+
+    function collectData(){
+      const items=[];
+      itemsBody.querySelectorAll("tr").forEach(tr=>{
+        const idx=tr.dataset.idx;
+        const name = tr.querySelector(`input[name="itemName_${idx}"]`)?.value?.trim()||"";
+        const qty  = parseNum(tr.querySelector(`input[name="qty_${idx}"]`)?.value||"0");
+        const rate = parseNum(tr.querySelector(`input[name="rate_${idx}"]`)?.value||"0");
+        const total= parseNum(tr.querySelector(`input[name="total_${idx}"]`)?.value||"0");
+        if (name || qty>0 || rate>0 || total>0) items.push({name,qty,rate,total});
+      });
+      const grand = items.reduce((s,i)=>s+(i.total||0),0);
+      return {
+        orderId: document.getElementById("orderId").value.trim(),
+        salesExecutive: document.getElementById("salesExecutive").value.trim(),
+        customerName: document.getElementById("customerName").value.trim(),
+        contactNumber: document.getElementById("contactNumber").value.trim(),
+        place: document.getElementById("place").value.trim(),
+        deliveryDateTime: document.getElementById("deliveryDateTime").value,
+        paymentTerms: document.getElementById("paymentTerms").value,
+        comments: document.getElementById("comments").value.trim(),
+        items, grandTotal: grand
+      };
+    }
+
+    document.getElementById("submitBtn").addEventListener("click", async ()=>{
+      const data = collectData();
+      if (!data.customerName || !data.contactNumber) { alert("Please fill Customer Name and Contact Number."); return; }
+      try {
+        const res = await fetch(WEB_APP_URL, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify(data) });
+        let msg="Submitted!"; try{ const j=await res.json(); msg = j.ok ? ("Order submitted! OrderID: " + (j.orderId||"(n/a)")) : ("Server error: " + JSON.stringify(j)); }catch(e){}
+        alert(msg);
+      } catch(err){ alert("Network error: "+err); }
+    });
+
+    function buildInvoiceHTML(data){
+      const dtTxt = data.deliveryDateTime ? new Date(data.deliveryDateTime).toLocaleString() : "-";
+      const now = new Date();
+      const invId = data.orderId || ("INV-" + now.getFullYear().toString().slice(-2) + (now.getMonth()+1).toString().padStart(2,'0') + now.getDate().toString().padStart(2,'0') + "-" + now.getHours().toString().padStart(2,'0') + now.getMinutes().toString().padStart(2,'0'));
+      const rows = data.items.map(it=>`<tr><td>${it.name||"-"}</td><td class="right">${it.qty||0}</td><td class="right">${fmtCurrency(it.rate||0)}</td><td class="right">${fmtCurrency(it.total||0)}</td></tr>`).join("");
+      return `
+        <div class="invHead">
+          <div class="invCompany">
+            <img class="invLogo" src="assets/logo.png" onerror="this.style.display='none'">
+            <div><div class="invTitle">${COMPANY.name}</div><div class="invSub">${COMPANY.details}</div></div>
+          </div>
+          <div class="invMeta">
+            <div><strong>Invoice #</strong> ${invId}</div>
+            <div><strong>Date</strong> ${now.toLocaleString()}</div>
+            <div><strong>Sales Executive</strong> ${data.salesExecutive || '-'}</div>
+          </div>
+        </div>
+        <div class="invCols">
+          <div class="infoBlock"><strong>Bill To</strong><br/>${data.customerName||'-'}<br/>${data.contactNumber||''}<br/>${data.place||''}</div>
+          <div class="infoBlock right"><strong>Delivery</strong><br/>${dtTxt}<br/>Payment: ${data.paymentTerms}</div>
+        </div>
+        <div class="hr"></div>
+        <table class="invTable">
+          <thead><tr><th>Item</th><th class="right">Qty</th><th class="right">Rate</th><th class="right">Amount</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <div class="invTotals"><div class="muted">Grand Total</div><div class="grand">${fmtCurrency(data.grandTotal)}</div></div>
+        <div class="hr"></div>
+        <div><strong>Comments</strong><br/><div style="white-space:pre-wrap">${data.comments || '-'}</div></div>
+      `;
+    }
+
+    const modal = document.getElementById('invoiceModal');
+    const invoiceContent = document.getElementById('invoiceContent');
+    document.getElementById('previewBtn').addEventListener('click', () => {
+      const data = collectData();
+      invoiceContent.innerHTML = buildInvoiceHTML(data);
+      modal.classList.add('open');
+    });
+    document.getElementById('closePreview').addEventListener('click', ()=> modal.classList.remove('open'));
+
+    function printInvoice(){
+      const data = collectData();
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice</title>
+      <style>
+        body{font-family:system-ui,Segoe UI,Arial;margin:16px}
+        .right{text-align:right}
+        .invTable{width:100%; border-collapse:collapse}
+        .invTable th, .invTable td{border-bottom:1px solid #ddd; padding:6px}
+        .invTotals{display:flex; justify-content:flex-end; gap:10px; align-items:center; margin-top:8px}
+        .invTitle{font-weight:800; font-size:18px}
+        .muted{color:#666}
+        img{max-height:56px}
+      </style>
+      </head><body>${buildInvoiceHTML(data)}</body></html>`;
+      const frame = document.getElementById('printFrame');
+      const doc = frame.contentWindow.document;
+      doc.open(); doc.write(html); doc.close();
+      frame.onload = () => frame.contentWindow.focus();
+      frame.contentWindow.print();
+    }
+    document.getElementById('printBtn').addEventListener('click', printInvoice);
+    document.getElementById('printFromPreview').addEventListener('click', printInvoice);
+  </script>
+</body>
+</html>
