@@ -6,12 +6,7 @@
   <title>JSK Associates – Order Form</title>
   <style>
     :root{
-      --primary:#0F62FE;
-      --accent:#4CAF50;
-      --bg:#f7f8fa;
-      --text:#111827;
-      --muted:#6b7280;
-      --border:#e5e7eb;
+      --primary:#0F62FE; --accent:#4CAF50; --bg:#f7f8fa; --text:#111827; --muted:#6b7280; --border:#e5e7eb;
     }
     *{box-sizing:border-box}
     body{font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; margin:0; background:var(--bg); color:var(--text)}
@@ -23,14 +18,26 @@
     h1{margin:0; font-size:22px}
     .meta{color:var(--muted); font-size:14px}
     main{padding:24px}
+
+    /* main grid */
     .grid{display:grid; grid-template-columns: repeat(2, 1fr); gap:16px}
+    @media (max-width: 640px){ .grid{grid-template-columns: 1fr} }
+
+    /* small two-column row used inside toggled sections */
+    .row-2{display:grid; grid-template-columns: 1fr 1fr; gap:12px}
+    @media (max-width:640px){ .row-2{grid-template-columns: 1fr} }
+
     label{font-size:12px; color:var(--muted); display:block; margin-bottom:6px}
     input, select, textarea{width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:#fff; font-size:14px}
     textarea{min-height:88px; resize:vertical}
+
     .section{margin-top:20px}
     .section-title{font-weight:700; font-size:16px; margin:4px 0 12px}
-    table{width:100%; border-collapse: collapse; border:1px solid var(--border); border-radius:12px; overflow:hidden}
-    thead th{background:#fafafa; font-size:12px; color:var(--muted); text-align:left; padding:10px; border-bottom:1px solid var(--border)}
+
+    /* responsive table wrapper */
+    .table-wrap{width:100%; overflow-x:auto}
+    table{min-width:700px; width:100%; border-collapse: collapse; border:1px solid var(--border); border-radius:12px; overflow:hidden}
+    thead th{background:#fafafa; font-size:12px; color:var(--muted); text-align:left; padding:10px; border-bottom:1px solid var(--border); position:sticky; top:0}
     tbody td{padding:8px; border-bottom:1px solid var(--border)}
     .qty, .rate, .total{max-width:120px}
     .actions{display:flex; gap:12px; margin-top:16px; flex-wrap:wrap}
@@ -42,38 +49,29 @@
     .totals{display:flex; justify-content:flex-end; gap:16px; align-items:center; margin-top:12px}
     .grand{font-size:18px; font-weight:800}
     .muted{color:var(--muted)}
-    .right{ text-align:right }
-    .nowrap{ white-space:nowrap }
+    .right{text-align:right}
+    .nowrap{white-space:nowrap}
+    .hidden{display:none !important}
 
-    /* Invoice Modal */
+    /* Modal */
     .modal{position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; padding:16px; z-index:9999}
     .modal.open{display:flex}
     .modalCard{width:min(900px, 96vw); background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,.25)}
     .modalHeader{display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--border)}
     .modalBody{padding:16px}
 
-    /* Invoice content */
-    .invHead{display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:8px}
-    .invCompany{display:flex; gap:12px; align-items:flex-start}
-    .invLogo{width:56px; height:56px; object-fit:contain}
-    .invTitle{font-weight:800; font-size:18px}
-    .invSub{color:var(--muted); font-size:13px}
-    .invCols{display:flex; gap:24px; justify-content:space-between; flex-wrap:wrap; margin:6px 0 12px}
-    .infoBlock{min-width:260px}
-    .hr{height:1px; background:var(--border); margin:12px 0}
+    /* Minimal Invoice */
+    .invMini h2{margin:0 0 8px 0; font-size:18px}
+    .invRow{display:flex; justify-content:space-between; gap:12px; margin:6px 0}
     .invTable{width:100%; border-collapse: collapse; border:1px solid var(--border)}
     .invTable th, .invTable td{border-bottom:1px solid var(--border); padding:8px}
-    .invTotals{display:flex; justify-content:flex-end; gap:12px; align-items:center; margin-top:8px}
 
-    @media print{
-      body{background:#fff}
-      .no-print{display:none !important}
-    }
+    @media print{ body{background:#fff} .no-print{display:none !important} }
   </style>
 </head>
 <body>
   <div class="container">
-    <header>
+    <header class="no-print">
       <div class="logoBox">
         <img id="companyLogoImg" class="logoImg" src="assets/logo.png" alt="Logo" onerror="this.style.display='none'; document.getElementById('fallbackLogo').style.display='flex';">
         <div id="fallbackLogo" class="fallbackLogo" style="display:none">JSK</div>
@@ -95,6 +93,7 @@
             <label for="contactNumber">Customer Contact Number</label>
             <input required id="contactNumber" placeholder="Customer Contact Number" />
           </div>
+
           <div>
             <label for="place">Place</label>
             <input id="place" placeholder="City / Area" />
@@ -103,6 +102,19 @@
             <label for="deliveryDateTime">Delivery Date & Time</label>
             <input type="datetime-local" id="deliveryDateTime" />
           </div>
+
+          <!-- Customer Category -->
+          <div>
+            <label for="customerCategory">Customer Category</label>
+            <select id="customerCategory">
+              <option value="">Select category</option>
+              <option>Carpenter</option>
+              <option>Interior</option>
+              <option>Direct Customer</option>
+              <option>referral customer</option>
+            </select>
+          </div>
+
           <div>
             <label for="paymentTerms">Payment Terms</label>
             <select id="paymentTerms">
@@ -112,34 +124,68 @@
               <option>Card</option>
             </select>
           </div>
+
+          <!-- Credit Due Date (single row block like a normal field) -->
+          <div id="creditDueWrap" class="hidden">
+            <label for="paymentDueDate">Payment Due Date (for Credit)</label>
+            <input type="date" id="paymentDueDate" />
+          </div>
+
           <div>
             <label for="orderId">Order / Reference ID (optional)</label>
             <input id="orderId" placeholder="Your internal reference" />
           </div>
+
+          <!-- Sales Executive dropdown + auto phone -->
           <div>
             <label for="salesExecutive">Sales Executive</label>
-            <input id="salesExecutive" placeholder="Name of sales person" />
+            <select id="salesExecutive">
+              <option value="">Select name</option>
+              <option>Jasneem</option>
+              <option>Jencil</option>
+              <option>Anurag</option>
+              <option>Salam</option>
+              <option>Midlaj</option>
+            </select>
+          </div>
+          <div>
+            <label for="salesExecutivePhone">Sales Executive Mobile</label>
+            <input id="salesExecutivePhone" placeholder="Auto-filled" readonly />
+          </div>
+
+          <!-- Referral (SAME STYLE AS CREDIT): a single neat block that toggles -->
+          <div id="referralWrap" class="hidden">
+            <label>Referral Customer</label>
+            <div class="row-2">
+              <input id="referralName" placeholder="Referral name" />
+              <input id="referralMobile" placeholder="Referral mobile" />
+            </div>
           </div>
         </div>
 
         <div class="section">
           <div class="section-title">Items</div>
-          <table id="itemsTable">
-            <thead>
-              <tr>
-                <th style="width:40%">Item Name / Description</th>
-                <th class="nowrap">QTY</th>
-                <th class="nowrap">Rate / Unit</th>
-                <th class="nowrap right">Line Total</th>
-                <th class="no-print"></th>
-              </tr>
-            </thead>
-            <tbody id="itemsBody"></tbody>
-          </table>
+
+          <!-- responsive wrapper so QTY etc. never get cut on mobile -->
+          <div class="table-wrap">
+            <table id="itemsTable">
+              <thead>
+                <tr>
+                  <th style="width:40%">Item Name / Description</th>
+                  <th class="nowrap">QTY</th>
+                  <th class="nowrap">Rate / Unit</th>
+                  <th class="nowrap right">Line Total</th>
+                  <th class="no-print"></th>
+                </tr>
+              </thead>
+              <tbody id="itemsBody"></tbody>
+            </table>
+          </div>
+
           <div class="actions no-print">
             <button class="btn btn-ghost" id="addRowBtn" type="button">+ Add item</button>
-            <span class="muted"></span>
           </div>
+
           <div class="totals">
             <div class="muted">Grand Total</div>
             <div class="grand" id="grandTotal">₹0.00</div>
@@ -157,7 +203,6 @@
           <button class="btn btn-accent" id="printBtn" type="button">Print Invoice PDF</button>
           <button class="btn btn-ghost" id="resetBtn" type="button">Reset</button>
         </div>
-        <div class="muted no-print" style="margin-top:8px"></div>
       </div>
     </main>
   </div>
@@ -181,6 +226,17 @@
   <script>
     const COMPANY = { name: "JSK Associates", details: "Moosa Peedika Road, Mekkunu • +91 95448 91890 • jskassociate24@gmail.com", short: "JSK" };
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxQ4iWnyAlYhWqi3fCthrqn-eOkY1A-Sr6qBqynuXHgKeUjSAMb9ygt_yZvGn8JQv8CXA/exec";
+
+    // Sales executive map
+    const SE_PHONES = {
+      "Jasneem": "9544891890",
+      "Jencil": "8139088748",
+      "Anurag": "8139033768",
+      "Salam": "8129655770",
+      "Midlaj": "8129044770"
+    };
+
+    // Branding
     document.getElementById("companyName").textContent = COMPANY.name;
     document.getElementById("companyDetails").textContent = COMPANY.details;
     document.getElementById("fallbackLogo").textContent = COMPANY.short;
@@ -188,6 +244,38 @@
     const fmtCurrency = (n) => new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:2}).format(isFinite(n)?Number(n):0);
     const parseNum = (v) => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
 
+    // Payment Terms → show due date when Credit
+    const paymentTerms = document.getElementById("paymentTerms");
+    const creditWrap = document.getElementById("creditDueWrap");
+    const paymentDueDate = document.getElementById("paymentDueDate");
+    function updateCreditVisibility(){
+      const isCredit = paymentTerms.value === "Credit";
+      creditWrap.classList.toggle("hidden", !isCredit);
+      if (!isCredit) paymentDueDate.value = "";
+    }
+    paymentTerms.addEventListener("change", updateCreditVisibility);
+    updateCreditVisibility();
+
+    // Customer Category → show referral block when "referral customer"
+    const customerCategory = document.getElementById("customerCategory");
+    const referralWrap = document.getElementById("referralWrap");
+    const referralName = document.getElementById("referralName");
+    const referralMobile = document.getElementById("referralMobile");
+    function updateReferralVisibility(){
+      const show = customerCategory.value === "referral customer";
+      referralWrap.classList.toggle("hidden", !show);
+      if (!show) { referralName.value = ""; referralMobile.value = ""; }
+    }
+    customerCategory.addEventListener("change", updateReferralVisibility);
+    updateReferralVisibility();
+
+    // Sales Executive → auto phone
+    const seSelect = document.getElementById("salesExecutive");
+    const sePhone = document.getElementById("salesExecutivePhone");
+    function updateSEPhone(){ sePhone.value = SE_PHONES[seSelect.value] || ""; }
+    seSelect.addEventListener("change", updateSEPhone);
+
+    // Dynamic items
     const itemsBody = document.getElementById("itemsBody");
     const grandTotalEl = document.getElementById("grandTotal");
     const addRowBtn = document.getElementById("addRowBtn");
@@ -234,15 +322,18 @@
     addRowBtn.addEventListener("click", ()=> createRow());
     for (let i=0;i<3;i++) createRow();
 
+    // Reset
     document.getElementById("resetBtn").addEventListener("click", ()=>{
       document.querySelectorAll("input, textarea, select").forEach(el=>{
-        if (el.type === "datetime-local") el.value = "";
+        if (el.type === "datetime-local" || el.type === "date") el.value = "";
         else if (el.tagName === "SELECT") el.selectedIndex = 0;
         else el.value = "";
       });
       itemsBody.innerHTML=""; rowCount=0; for (let i=0;i<3;i++) createRow(); recalcGrand();
+      updateCreditVisibility(); updateReferralVisibility(); updateSEPhone();
     });
 
+    // Collect payload
     function collectData(){
       const items=[];
       itemsBody.querySelectorAll("tr").forEach(tr=>{
@@ -256,17 +347,23 @@
       const grand = items.reduce((s,i)=>s+(i.total||0),0);
       return {
         orderId: document.getElementById("orderId").value.trim(),
-        salesExecutive: document.getElementById("salesExecutive").value.trim(),
+        customerCategory: document.getElementById("customerCategory").value,
+        referralName: document.getElementById("referralName").value.trim(),
+        referralMobile: document.getElementById("referralMobile").value.trim(),
+        salesExecutive: document.getElementById("salesExecutive").value,
+        salesExecutivePhone: document.getElementById("salesExecutivePhone").value,
         customerName: document.getElementById("customerName").value.trim(),
         contactNumber: document.getElementById("contactNumber").value.trim(),
         place: document.getElementById("place").value.trim(),
         deliveryDateTime: document.getElementById("deliveryDateTime").value,
         paymentTerms: document.getElementById("paymentTerms").value,
+        paymentDueDate: document.getElementById("paymentDueDate").value,
         comments: document.getElementById("comments").value.trim(),
         items, grandTotal: grand
       };
     }
 
+    // Submit (simple, avoids preflight)
     document.getElementById("submitBtn").addEventListener("click", async ()=>{
       const data = collectData();
       if (!data.customerName || !data.contactNumber) { alert("Please fill Customer Name and Contact Number."); return; }
@@ -277,61 +374,52 @@
       } catch(err){ alert("Network error: "+err); }
     });
 
-    function buildInvoiceHTML(data){
-      const dtTxt = data.deliveryDateTime ? new Date(data.deliveryDateTime).toLocaleString() : "-";
-      const now = new Date();
-      const invId = data.orderId || ("INV-" + now.getFullYear().toString().slice(-2) + (now.getMonth()+1).toString().padStart(2,'0') + now.getDate().toString().padStart(2,'0') + "-" + now.getHours().toString().padStart(2,'0') + now.getMinutes().toString().padStart(2,'0'));
-      const rows = data.items.map(it=>`<tr><td>${it.name||"-"}</td><td class="right">${it.qty||0}</td><td class="right">${fmtCurrency(it.rate||0)}</td><td class="right">${fmtCurrency(it.total||0)}</td></tr>`).join("");
+    // Minimal invoice (no company details)
+    function buildInvoiceHTML_Min(data){
+      const rows = data.items.map(it => `
+        <tr>
+          <td>${it.name || "-"}</td>
+          <td class="right">${it.qty || 0}</td>
+          <td class="right">${fmtCurrency(it.rate || 0)}</td>
+          <td class="right">${fmtCurrency(it.total || 0)}</td>
+        </tr>
+      `).join("");
       return `
-        <div class="invHead">
-          <div class="invCompany">
-            <img class="invLogo" src="assets/logo.png" onerror="this.style.display='none'">
-            <div><div class="invTitle">${COMPANY.name}</div><div class="invSub">${COMPANY.details}</div></div>
+        <div class="invMini">
+          <h2>Invoice</h2>
+          <div class="invRow"><strong>Sales Executive:</strong> <span>${data.salesExecutive || "-"}</span></div>
+          <div class="invRow"><strong>Mobile:</strong> <span>${data.salesExecutivePhone || "-"}</span></div>
+          <table class="invTable" style="margin-top:8px">
+            <thead><tr><th>Item</th><th class="right">Qty</th><th class="right">Rate</th><th class="right">Amount</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+          <div class="invRow" style="justify-content:flex-end; gap:12px; margin-top:8px">
+            <div class="muted">Grand Total</div>
+            <div class="grand">${fmtCurrency(data.grandTotal)}</div>
           </div>
-          <div class="invMeta">
-            <div><strong>Invoice #</strong> ${invId}</div>
-            <div><strong>Date</strong> ${now.toLocaleString()}</div>
-            <div><strong>Sales Executive</strong> ${data.salesExecutive || '-'}</div>
-          </div>
+          <div style="margin-top:8px"><strong>Comments</strong><br/><div style="white-space:pre-wrap">${data.comments || '-'}</div></div>
         </div>
-        <div class="invCols">
-          <div class="infoBlock"><strong>Bill To</strong><br/>${data.customerName||'-'}<br/>${data.contactNumber||''}<br/>${data.place||''}</div>
-          <div class="infoBlock right"><strong>Delivery</strong><br/>${dtTxt}<br/>Payment: ${data.paymentTerms}</div>
-        </div>
-        <div class="hr"></div>
-        <table class="invTable">
-          <thead><tr><th>Item</th><th class="right">Qty</th><th class="right">Rate</th><th class="right">Amount</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-        <div class="invTotals"><div class="muted">Grand Total</div><div class="grand">${fmtCurrency(data.grandTotal)}</div></div>
-        <div class="hr"></div>
-        <div><strong>Comments</strong><br/><div style="white-space:pre-wrap">${data.comments || '-'}</div></div>
       `;
     }
 
+    // Preview & print
     const modal = document.getElementById('invoiceModal');
     const invoiceContent = document.getElementById('invoiceContent');
     document.getElementById('previewBtn').addEventListener('click', () => {
-      const data = collectData();
-      invoiceContent.innerHTML = buildInvoiceHTML(data);
+      invoiceContent.innerHTML = buildInvoiceHTML_Min(collectData());
       modal.classList.add('open');
     });
     document.getElementById('closePreview').addEventListener('click', ()=> modal.classList.remove('open'));
-
     function printInvoice(){
-      const data = collectData();
       const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice</title>
       <style>
         body{font-family:system-ui,Segoe UI,Arial;margin:16px}
-        .right{text-align:right}
         .invTable{width:100%; border-collapse:collapse}
         .invTable th, .invTable td{border-bottom:1px solid #ddd; padding:6px}
-        .invTotals{display:flex; justify-content:flex-end; gap:10px; align-items:center; margin-top:8px}
-        .invTitle{font-weight:800; font-size:18px}
-        .muted{color:#666}
-        img{max-height:56px}
+        .right{text-align:right}
+        .grand{font-weight:800; font-size:18px}
       </style>
-      </head><body>${buildInvoiceHTML(data)}</body></html>`;
+      </head><body>${buildInvoiceHTML_Min(collectData())}</body></html>`;
       const frame = document.getElementById('printFrame');
       const doc = frame.contentWindow.document;
       doc.open(); doc.write(html); doc.close();
