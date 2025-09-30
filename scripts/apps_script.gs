@@ -1,8 +1,7 @@
-/***** CONFIG *****/
-const SHEET_ID     = '';     // <-- Replace this with your actual Google Sheet ID
+/** CONFIG **/
+const SHEET_ID     = '1TffGe88K6uiKYheuOM91ylZNXQJp4aiRB3togVddYcE'; // your Sheet ID
 const SHEET_ORDERS = 'Orders';
 const SHEET_ITEMS  = 'OrderItems';
-
 
 function doOptions(e) {
   return cors_(200, { ok: true });
@@ -26,35 +25,46 @@ function doPost(e) {
     const orderId = (d.orderId || '').trim() || autoOrderId_(ts);
     const items = Array.isArray(d.items) ? d.items : [];
 
-    // Append to Orders sheet
+    // Normalize conditional fields
+    const paymentDueDate = (d.paymentTerms === 'Credit') ? (d.paymentDueDate || '').trim() : '';
+    const isReferral = (d.customerCategory || '').trim().toLowerCase() === 'referral customer';
+    const referralName = isReferral ? (d.referralName || '').trim() : '';
+    const referralMobile = isReferral ? (d.referralMobile || '').trim() : '';
+
+    // Append to Orders sheet (order must match headers exactly)
     const orders = ss.getSheetByName(SHEET_ORDERS);
     orders.appendRow([
-      ts,
-      orderUID,
-      orderId,
-      (d.customerName || '').trim(),
-      (d.contactNumber || '').trim(),
-      (d.place || '').trim(),
-      (d.deliveryDateTime || '').trim(),
-      (d.paymentTerms || '').trim(),
-      (d.salesExecutive || '').trim(),
-      (d.comments || '').trim(),
-      Number(d.grandTotal || 0),
-      items.length,
-      'webform'
+      ts,                                // Timestamp
+      orderUID,                          // OrderUID
+      orderId,                           // OrderID
+      (d.customerName || '').trim(),     // CustomerName
+      (d.contactNumber || '').trim(),    // ContactNumber
+      (d.place || '').trim(),            // Place
+      (d.deliveryDateTime || '').trim(), // DeliveryDateTime
+      (d.paymentTerms || '').trim(),     // PaymentTerms
+      paymentDueDate,                    // PaymentDueDate
+      (d.customerCategory || '').trim(), // CustomerCategory
+      referralName,                      // ReferralName
+      referralMobile,                    // ReferralMobile
+      (d.salesExecutive || '').trim(),   // SalesExecutive
+      (d.salesExecutivePhone || '').trim(), // SalesExecutivePhone
+      (d.comments || '').trim(),         // Comments
+      Number(d.grandTotal || 0),         // GrandTotal
+      items.length,                      // ItemCount
+      'webform'                          // Source
     ]);
 
     // Append to OrderItems sheet
     if (items.length) {
       const itemsSheet = ss.getSheetByName(SHEET_ITEMS);
       const rows = items.map((it, i) => [
-        ts,
-        orderUID,
-        i + 1,
-        (it.name || '').trim(),
-        Number(it.qty || 0),
-        Number(it.rate || 0),
-        Number(it.total ?? (Number(it.qty || 0) * Number(it.rate || 0)))
+        ts,                           // Timestamp
+        orderUID,                     // OrderUID (to join with Orders)
+        i + 1,                        // ItemIndex
+        (it.name || '').trim(),       // ItemName
+        Number(it.qty || 0),          // Qty
+        Number(it.rate || 0),         // Rate
+        Number(it.total ?? (Number(it.qty || 0) * Number(it.rate || 0))) // Total
       ]).filter(r => !(r[3] === '' && r[4] === 0 && r[5] === 0 && r[6] === 0));
 
       if (rows.length)
@@ -68,7 +78,7 @@ function doPost(e) {
   }
 }
 
-/***** Helpers *****/
+/** Helpers **/
 function cors_(statusCode, data) {
   return ContentService
     .createTextOutput(JSON.stringify(data))
@@ -79,8 +89,10 @@ function ensureSheets_(ss) {
   // Orders sheet
   let orders = ss.getSheetByName(SHEET_ORDERS);
   if (!orders) orders = ss.insertSheet(SHEET_ORDERS);
+
+  // If header row is empty, lay down full header (18 columns)
   if (isEmptyHeader_(orders)) {
-    orders.getRange(1, 1, 1, 13).setValues([[
+    orders.getRange(1, 1, 1, 18).setValues([[
       'Timestamp',
       'OrderUID',
       'OrderID',
@@ -89,7 +101,12 @@ function ensureSheets_(ss) {
       'Place',
       'DeliveryDateTime',
       'PaymentTerms',
+      'PaymentDueDate',
+      'CustomerCategory',
+      'ReferralName',
+      'ReferralMobile',
       'SalesExecutive',
+      'SalesExecutivePhone',
       'Comments',
       'GrandTotal',
       'ItemCount',
@@ -122,5 +139,6 @@ function isEmptyHeader_(sh) {
 
 function autoOrderId_(d) {
   const p = n => String(n).padStart(2, '0');
+  // FIXED: proper string template with backticks
   return `INV-${String(d.getFullYear()).slice(-2)}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}-${Math.floor(Math.random() * 90) + 10}`;
 }
