@@ -4,9 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>JSK Associates – Order Form</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0F62FE">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="JSK Orders">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+
   <style>
     :root{
-      --primary:#0F62FE; --accent:#4CAF50; --bg:#f7f8fa; --text:#111827; --muted:#6b7280; --border:#e5e7eb;
+      --primary:#0F62FE; --accent:#16a34a; --bg:#f7f8fa; --text:#111827; --muted:#6b7280; --border:#e5e7eb;
     }
     *{box-sizing:border-box}
     body{font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; margin:0; background:var(--bg); color:var(--text)}
@@ -42,10 +51,11 @@
     tbody td{padding:8px; border-bottom:1px solid var(--border)}
     .qty, .rate, .total{max-width:120px}
     .actions{display:flex; gap:12px; margin-top:16px; flex-wrap:wrap}
-    .btn{border:none; border-radius:10px; padding:10px 14px; font-weight:600; cursor:pointer}
+    .btn{border:none; border-radius:10px; padding:10px 14px; font-weight:600; cursor:pointer; transition:transform .05s ease}
+    .btn:active{transform:translateY(1px)}
     .btn-primary{background:var(--primary); color:#fff}
     .btn-accent{background:var(--accent); color:#fff}
-    .btn-ghost{background:#fff; color:var(--text); border:1px solid var(--border)}
+    .btn-ghost{background:#fff; color:#111827; border:1px solid var(--border)}
     .btn[disabled]{opacity:.7; cursor:not-allowed}
 
     .totals{display:flex; justify-content:flex-end; gap:16px; align-items:center; margin-top:12px}
@@ -68,10 +78,26 @@
     .invTable{width:100%; border-collapse: collapse; border:1px solid var(--border)}
     .invTable th, .invTable td{border-bottom:1px solid var(--border); padding:8px}
 
-    /* Toast + Spinner */
-    #toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px 16px; border-radius:8px; font-size:14px; display:none; z-index:9999}
-    #spinner{display:none; width:16px; height:16px; border:2px solid #ffffff; border-top:2px solid transparent; border-radius:50%; animation:spin 1s linear infinite; margin-left:8px; vertical-align:middle}
+    /* Toast + Spinner (top-center) */
+    #toast{
+      position:fixed; top:16px; left:50%; transform:translateX(-50%);
+      background:#333; color:#fff; padding:10px 16px; border-radius:10px;
+      font-size:14px; display:none; z-index:9999; box-shadow:0 8px 20px rgba(0,0,0,.25);
+    }
+    #spinner{
+      display:none; width:16px; height:16px; border:2px solid #ffffff; border-top:2px solid transparent;
+      border-radius:50%; animation:spin 1s linear infinite; margin-left:8px; vertical-align:middle
+    }
     @keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
+
+    /* Install banner */
+    #installBanner{
+      position:fixed; top:16px; left:50%; transform:translateX(-50%);
+      background:#0F62FE; color:#fff; padding:10px 14px; border-radius:10px;
+      box-shadow:0 8px 20px rgba(0,0,0,.25); display:none; z-index:9999;
+      font: 14px system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      gap:10px; align-items:center;
+    }
 
     @media print{ body{background:#fff} .no-print{display:none !important} }
   </style>
@@ -132,7 +158,7 @@
             </select>
           </div>
 
-          <!-- Credit Due Date (single row block like a normal field) -->
+          <!-- Credit Due Date -->
           <div id="creditDueWrap" class="hidden">
             <label for="paymentDueDate">Payment Due Date (for Credit)</label>
             <input type="date" id="paymentDueDate" />
@@ -160,7 +186,7 @@
             <input id="salesExecutivePhone" placeholder="Auto-filled" readonly />
           </div>
 
-          <!-- Referral (SAME STYLE AS CREDIT): a single neat block that toggles -->
+          <!-- Referral -->
           <div id="referralWrap" class="hidden">
             <label>Referral Customer</label>
             <div class="row-2">
@@ -173,7 +199,6 @@
         <div class="section">
           <div class="section-title">Items</div>
 
-          <!-- responsive wrapper so QTY etc. never get cut on mobile -->
           <div class="table-wrap">
             <table id="itemsTable">
               <thead>
@@ -233,13 +258,52 @@
   <!-- Toast -->
   <div id="toast"></div>
 
+  <!-- Install banner -->
+  <div id="installBanner">
+    <span>Install “JSK Orders” on this device?</span>
+    <button id="a2hsBtn" class="btn btn-ghost" style="background:#fff;color:#0F62FE;border:0">Install</button>
+    <button id="a2hsDismiss" class="btn btn-ghost" style="border-color:rgba(255,255,255,.8);color:#fff">Not now</button>
+  </div>
+
   <iframe id="printFrame" style="position:absolute; left:-9999px; width:0; height:0; border:0"></iframe>
 
   <script>
-    const COMPANY = { name: "JSK Associates", details: "Moosa Peedika Road, Mekkunu • +91 95448 91890 • jskassociate24@gmail.com", short: "JSK" };
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxQ4iWnyAlYhWqi3fCthrqn-eOkY1A-Sr6qBqynuXHgKeUjSAMb9ygt_yZvGn8JQv8CXA/exec"; // keep yours
+    // PWA registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(console.error);
+      });
+    }
+    // A2HS prompt handling
+    let deferredPrompt;
+    const installBanner = document.getElementById('installBanner');
+    const a2hsBtn = document.getElementById('a2hsBtn');
+    const a2hsDismiss = document.getElementById('a2hsDismiss');
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault(); deferredPrompt = e; installBanner.style.display = 'flex';
+    });
+    a2hsBtn?.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      installBanner.style.display = 'none';
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice; deferredPrompt = null;
+    });
+    a2hsDismiss?.addEventListener('click', () => installBanner.style.display = 'none');
+    window.addEventListener('appinstalled', () => installBanner.style.display = 'none');
+    // iOS hint
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isInStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if (isIOS && !isInStandalone) {
+      installBanner.style.display = 'flex';
+      installBanner.querySelector('span').textContent = 'Add to Home Screen: tap Share (↑) and choose “Add to Home Screen”.';
+      document.getElementById('a2hsBtn').style.display = 'none';
+      document.getElementById('a2hsDismiss').textContent = 'OK';
+    }
 
-    // Sales executive map (matching your dropdown)
+    const COMPANY = { name: "JSK Associates", details: "Moosa Peedika Road, Mekkunu • +91 95448 91890 • jskassociate24@gmail.com", short: "JSK" };
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxQ4iWnyAlYhWqi3fCthrqn-eOkY1A-Sr6qBqynuXHgKeUjSAMb9ygt_yZvGn8JQv8CXA/exec";
+
+    // Sales executive map
     const SE_PHONES = {
       "Jasneem": "9544891890",
       "Jencil": "8139088748",
@@ -274,7 +338,6 @@
     const referralName = document.getElementById("referralName");
     const referralMobile = document.getElementById("referralMobile");
     function updateReferralVisibility(){
-      // because your option text is "referral customer" (lowercase)
       const show = (customerCategory.value || '').toLowerCase() === 'referral customer';
       referralWrap.classList.toggle("hidden", !show);
       if (!show) { referralName.value = ""; referralMobile.value = ""; }
@@ -350,9 +413,10 @@
 
     function showToast(message, success = true) {
       toast.textContent = message;
-      toast.style.background = success ? "#28a745" : "#dc3545";
+      toast.style.background = success ? "#16a34a" : "#dc3545";
       toast.style.display = "block";
-      setTimeout(() => { toast.style.display = "none"; }, 3000);
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => { toast.style.display = "none"; }, 3000);
     }
     function disableSubmit(disabled) {
       submitBtn.disabled = disabled;
@@ -388,7 +452,7 @@
       const grand = items.reduce((s,i)=>s+(i.total||0),0);
       const clientToken = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ('tok-' + Date.now() + '-' + Math.random().toString(16).slice(2));
       return {
-        clientToken, // used server-side to prevent duplicates
+        clientToken,
         orderId: document.getElementById("orderId").value.trim(),
         customerCategory: document.getElementById("customerCategory").value,
         referralName: document.getElementById("referralName").value.trim(),
@@ -410,7 +474,6 @@
     document.getElementById("submitBtn").addEventListener("click", async ()=>{
       const data = collectData();
 
-      // Enhanced validation
       if (!data.customerName || !data.contactNumber) {
         showToast("Customer name and contact number are required.", false);
         return;
@@ -429,15 +492,14 @@
         disableSubmit(true);
         const res = await fetch(WEB_APP_URL, {
           method:"POST",
-          headers:{ "Content-Type":"text/plain;charset=utf-8" }, // avoids preflight
+          headers:{ "Content-Type":"text/plain;charset=utf-8" },
           body: JSON.stringify(data)
         });
-
         const j = await res.json().catch(()=>({ok:false}));
         if (j && j.ok) {
           const note = j.dedup ? " (duplicate ignored)" : "";
           showToast(`Order submitted! Order ID: ${j.orderId || "(n/a)"}${note}`, true);
-          hardReset(); // reset after success
+          hardReset();
         } else {
           showToast("Submission failed. Please try again.", false);
         }
