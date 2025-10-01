@@ -1,569 +1,522 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>JSK Associates – Order Form</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>JSK Associates – Sales Suite</title>
 
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0F62FE">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="JSK Orders">
-  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0F62FE">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="JSK Orders">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
 
-  <style>
-    :root{
-      --primary:#0F62FE; --accent:#16a34a; --bg:#f7f8fa; --text:#111827; --muted:#6b7280; --border:#e5e7eb;
-    }
-    *{box-sizing:border-box}
-    body{font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; margin:0; background:var(--bg); color:var(--text)}
-    .container{max-width:960px; margin:24px auto 64px; background:#fff; border:1px solid var(--border); border-radius:16px; box-shadow:0 10px 24px rgba(0,0,0,.06)}
-    header{padding:20px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:16px}
-    .logoBox{display:flex; align-items:center; gap:16px}
-    .logoImg{width:56px; height:56px; object-fit:contain}
-    .fallbackLogo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--primary),#6ee7b7); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800}
-    h1{margin:0; font-size:22px}
-    .meta{color:var(--muted); font-size:14px}
-    main{padding:24px}
+    <style>
+        :root{ --primary:#0F62FE; --accent:#16a34a; --bg:#f7f8fa; --text:#111827; --muted:#6b7280; --border:#e5e7eb; }
+        *{box-sizing:border-box}
+        body{font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; margin:0; background:var(--bg); color:var(--text)}
+        .container{max-width:1100px; margin:24px auto 64px; background:#fff; border:1px solid var(--border); border-radius:16px; box-shadow:0 10px 24px rgba(0,0,0,.06); overflow:hidden}
+        header{padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:16px; justify-content:space-between}
+        .leftHead{display:flex; align-items:center; gap:14px}
+        .logoImg{width:48px; height:48px; object-fit:contain}
+        h1{margin:0; font-size:20px}
+        .meta{color:var(--muted); font-size:12px}
+        main{padding:18px 20px 24px}
 
-    /* main grid */
-    .grid{display:grid; grid-template-columns: repeat(2, 1fr); gap:16px}
-    @media (max-width: 640px){ .grid{grid-template-columns: 1fr} }
+        /* right-side location control: label stacked over select */
+        .topbar{
+            display:flex;
+            flex-direction:column;
+            align-items:flex-end;
+            gap:6px;
+            min-width:200px;
+        }
+        .locLabel{ font-size:12px; color:var(--muted); font-weight:600; line-height:1; margin:0; }
+        .select{ padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:#fff; min-width:180px; }
 
-    /* small two-column row used inside toggled sections */
-    .row-2{display:grid; grid-template-columns: 1fr 1fr; gap:12px}
-    @media (max-width:640px){ .row-2{grid-template-columns: 1fr} }
+        /* main grid */
+        .grid{display:grid; grid-template-columns: repeat(2, 1fr); gap:16px}
+        @media (max-width: 640px){
+            header{ flex-direction:column; align-items:flex-start; gap:12px; }
+            .topbar{ align-items:flex-start; width:100%; }
+            .select{ width:100%; }
+            .grid{grid-template-columns: 1fr}
+        }
+        .row-2{display:grid; grid-template-columns: 1fr 1fr; gap:12px}
+        @media (max-width:640px){ .row-2{grid-template-columns: 1fr} }
 
-    label{font-size:12px; color:var(--muted); display:block; margin-bottom:6px}
-    input, select, textarea{width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:#fff; font-size:14px}
-    input[readonly]{background:#fafafa}
-    textarea{min-height:88px; resize:vertical}
+        label{font-size:12px; color:var(--muted); display:block; margin-bottom:6px}
+        input, select, textarea{width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:#fff; font-size:14px}
+        input[readonly]{background:#fafafa}
+        textarea{min-height:88px; resize:vertical}
 
-    .section{margin-top:20px}
-    .section-title{font-weight:700; font-size:16px; margin:4px 0 12px}
+        .section{margin-top:20px}
+        .section-title{font-weight:700; font-size:16px; margin:4px 0 12px}
 
-    /* responsive table wrapper */
-    .table-wrap{width:100%; overflow-x:auto}
-    table{min-width:700px; width:100%; border-collapse: collapse; border:1px solid var(--border); border-radius:12px; overflow:hidden}
-    thead th{background:#fafafa; font-size:12px; color:var(--muted); text-align:left; padding:10px; border-bottom:1px solid var(--border); position:sticky; top:0}
-    tbody td{padding:8px; border-bottom:1px solid var(--border)}
-    .qty, .rate, .total{max-width:120px}
-    .actions{display:flex; gap:12px; margin-top:16px; flex-wrap:wrap}
-    .btn{border:none; border-radius:10px; padding:10px 14px; font-weight:600; cursor:pointer; transition:transform .05s ease}
-    .btn:active{transform:translateY(1px)}
-    .btn-primary{background:var(--primary); color:#fff}
-    .btn-accent{background:var(--accent); color:#fff}
-    .btn-ghost{background:#fff; color:#111827; border:1px solid var(--border)}
-    .btn[disabled]{opacity:.7; cursor:not-allowed}
+        /* responsive table wrapper */
+        .table-wrap{width:100%; overflow-x:auto}
+        table{min-width:700px; width:100%; border-collapse: collapse; border:1px solid var(--border); border-radius:12px; overflow:hidden}
+        thead th{background:#fafafa; font-size:12px; color:var(--muted); text-align:left; padding:10px; border-bottom:1px solid var(--border)}
+        tbody td{padding:8px; border-bottom:1px solid var(--border)}
+        .qty, .rate, .total{max-width:120px}
+        .actions{display:flex; gap:12px; margin-top:16px; flex-wrap:wrap}
+        .btn{border:none; border-radius:10px; padding:10px 14px; font-weight:600; cursor:pointer; transition:transform .05s ease}
+        .btn:active{transform:translateY(1px)}
+        .btn-primary{background:var(--primary); color:#fff}
+        .btn-accent{background:var(--accent); color:#fff}
+        .btn-ghost{background:#fff; color:#111827; border:1px solid var(--border)}
+        .btn[disabled]{opacity:.7; cursor:not-allowed}
 
-    .totals{display:flex; justify-content:flex-end; gap:16px; align-items:center; margin-top:12px}
-    .grand{font-size:18px; font-weight:800}
-    .muted{color:var(--muted)}
-    .right{text-align:right}
-    .nowrap{white-space:nowrap}
-    .hidden{display:none !important}
+        .totals{display:flex; justify-content:flex-end; gap:16px; align-items:center; margin-top:12px}
+        .grand{font-size:18px; font-weight:800}
+        .muted{color:var(--muted)}
+        .right{text-align:right}
+        .nowrap{white-space:nowrap}
+        .hidden{display:none !important}
 
-    /* Modal */
-    .modal{position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; padding:16px; z-index:9999}
-    .modal.open{display:flex}
-    .modalCard{width:min(900px, 96vw); background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,.25)}
-    .modalHeader{display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--border)}
-    .modalBody{padding:16px}
+        /* Modal */
+        .modal{position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; padding:16px; z-index:9999}
+        .modal.open{display:flex}
+        .modalCard{width:min(900px, 96vw); background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,.25)}
+        .modalHeader{display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--border)}
+        .modalBody{padding:16px}
 
-    /* Minimal Invoice */
-    .invMini h2{margin:0 0 8px 0; font-size:18px}
-    .invRow{display:flex; justify-content:space-between; gap:12px; margin:6px 0}
-    .invTable{width:100%; border-collapse: collapse; border:1px solid var(--border)}
-    .invTable th, .invTable td{border-bottom:1px solid var(--border); padding:8px}
+        /* Minimal Invoice */
+        .invMini h2{margin:0 0 8px 0; font-size:18px}
+        .invRow{display:flex; justify-content:space-between; gap:12px; margin:6px 0}
+        .invTable{width:100%; border-collapse: collapse; border:1px solid var(--border)}
+        .invTable th, .invTable td{border-bottom:1px solid var(--border); padding:8px}
 
-    /* Toast + Spinner (top-center) */
-    #toast{
-      position:fixed; top:16px; left:50%; transform:translateX(-50%);
-      background:#333; color:#fff; padding:10px 16px; border-radius:10px;
-      font-size:14px; display:none; z-index:9999; box-shadow:0 8px 20px rgba(0,0,0,.25);
-    }
-    #spinner{
-      display:none; width:16px; height:16px; border:2px solid #ffffff; border-top:2px solid transparent;
-      border-radius:50%; animation:spin 1s linear infinite; margin-left:8px; vertical-align:middle
-    }
-    @keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
+        /* Toast + Spinner (top-center) */
+        #toast{ position:fixed; top:16px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px 16px; border-radius:10px; font-size:14px; display:none; z-index:9999; box-shadow:0 8px 20px rgba(0,0,0,.25);}
+        #spinner{ display:none; width:16px; height:16px; border:2px solid #ffffff; border-top:2px solid transparent; border-radius:50%; animation:spin 1s linear infinite; margin-left:8px; vertical-align:middle}
+        @keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
 
-    /* Install banner */
-    #installBanner{
-      position:fixed; top:16px; left:50%; transform:translateX(-50%);
-      background:#0F62FE; color:#fff; padding:10px 14px; border-radius:10px;
-      box-shadow:0 8px 20px rgba(0,0,0,.25); display:none; z-index:9999;
-      font: 14px system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      gap:10px; align-items:center;
-    }
+        /* Install banner (contrast-safe buttons) */
+        #installBanner{ position:fixed; top:16px; left:50%; transform:translateX(-50%); background:#0F62FE; color:#fff; padding:10px 14px; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,.25); display:none; z-index:9999; font: 14px system-ui, -apple-system, Segoe UI, Roboto, Arial; gap:10px; align-items:center; }
+        #installBanner .btn{border:1px solid rgba(255,255,255,.65); background:#fff; color:#0F62FE}
+        #installBanner #a2hsDismiss{ color:#e54848; background:#fff; }
 
-    @media print{ body{background:#fff} .no-print{display:none !important} }
-  </style>
+        @media print{ body{background:#fff} .no-print{display:none !important} }
+    </style>
 </head>
 <body>
-  <div class="container">
+<div class="container">
     <header class="no-print">
-      <div class="logoBox">
-        <img id="companyLogoImg" class="logoImg" src="assets/logo.png" alt="Logo" onerror="this.style.display='none'; document.getElementById('fallbackLogo').style.display='flex';">
-        <div id="fallbackLogo" class="fallbackLogo" style="display:none">JSK</div>
-      </div>
-      <div>
-        <h1 id="companyName">JSK Associates</h1>
-        <div class="meta" id="companyDetails">Moosa Peedika, Mekkunu • +91 95448 91890 • jskassociate24@gmail.com</div>
-      </div>
+        <div class="leftHead">
+            <img class="logoImg" src="assets/logo.png" alt="Logo">
+            <div>
+                <h1 id="companyName">JSK Associates</h1>
+                <div class="meta" id="companyDetails">Moosa Peedika Road, Mekkunu • +91 95448 91890 • jskassociate24@gmail.com</div>
+            </div>
+        </div>
+
+        <!-- Location (fixed alignment) -->
+        <div class="topbar">
+            <div class="locLabel">Location</div>
+            <select id="locationSelect" class="select" title="Switch location">
+                <option value="mekkunnu">Mekkunnu</option>
+                <option value="vadakara">Vatakara</option>
+            </select>
+        </div>
     </header>
 
     <main>
-      <div id="formView">
-        <div class="grid">
-          <div>
-            <label for="customerName">Customer Name</label>
-            <input required id="customerName" placeholder="Customer Name" />
-          </div>
-          <div>
-            <label for="contactNumber">Customer Contact Number</label>
-            <input required id="contactNumber" placeholder="10-digit mobile (India)" inputmode="numeric" />
-          </div>
-
-          <div>
-            <label for="place">Place</label>
-            <input id="place" placeholder="City / Area" />
-          </div>
-          <div>
-            <label for="deliveryDateTime">Delivery Date & Time</label>
-            <input type="datetime-local" id="deliveryDateTime" />
-          </div>
-
-          <!-- Customer Category -->
-          <div>
-            <label for="customerCategory">Customer Category</label>
-            <select id="customerCategory">
-              <option value="">Select category</option>
-              <option>Carpenter</option>
-              <option>Interior</option>
-              <option>Direct Customer</option>
-              <option>referral customer</option>
-            </select>
-          </div>
-
-          <div>
-            <label for="paymentTerms">Payment Terms</label>
-            <select id="paymentTerms">
-              <option>Cash</option>
-              <option>Online Transfer</option>
-              <option>Credit</option>
-              <option>Card</option>
-            </select>
-          </div>
-
-          <!-- Credit Due Date -->
-          <div id="creditDueWrap" class="hidden">
-            <label for="paymentDueDate">Payment Due Date (for Credit)</label>
-            <input type="date" id="paymentDueDate" />
-          </div>
-
-          <div>
-            <label for="orderId">Order / Reference ID (optional)</label>
-            <input id="orderId" placeholder="Your internal reference" />
-          </div>
-
-          <!-- Sales Executive dropdown + auto phone -->
-          <div>
-            <label for="salesExecutive">Sales Executive</label>
-            <select id="salesExecutive">
-              <option value="">Select name</option>
-              <option>Jasneem</option>
-              <option>Jencil</option>
-              <option>Anurag</option>
-              <option>Salam</option>
-              <option>Midlaj</option>
-            </select>
-          </div>
-          <div>
-            <label for="salesExecutivePhone">Sales Executive Mobile</label>
-            <input id="salesExecutivePhone" placeholder="Auto-filled" readonly />
-          </div>
-
-          <!-- Referral -->
-          <div id="referralWrap" class="hidden">
-            <label>Referral Customer</label>
-            <div class="row-2">
-              <input id="referralName" placeholder="Referral name" />
-              <input id="referralMobile" placeholder="Referral mobile" />
+        <!-- ORDERS -->
+        <section id="mode_orders">
+            <div class="grid">
+                <div>
+                    <label for="customerName">Customer Name</label>
+                    <input required id="customerName" placeholder="Customer Name" />
+                </div>
+                <div>
+                    <label for="contactNumber">Customer Contact Number</label>
+                    <input required id="contactNumber" placeholder="10-digit mobile (India)" inputmode="numeric" />
+                </div>
+                <div>
+                    <label for="place">Place</label>
+                    <input id="place" placeholder="City / Area" />
+                </div>
+                <div>
+                    <label for="deliveryDateTime">Delivery Date & Time</label>
+                    <input type="datetime-local" id="deliveryDateTime" />
+                </div>
+                <div>
+                    <label for="customerCategory">Customer Category</label>
+                    <select id="customerCategory">
+                        <option value="">Select category</option>
+                        <option>Carpenter</option>
+                        <option>Interior</option>
+                        <option>Direct Customer</option>
+                        <option>referral customer</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="paymentTerms">Payment Terms</label>
+                    <select id="paymentTerms">
+                        <option>Cash</option>
+                        <option>Online Transfer</option>
+                        <option>Credit</option>
+                        <option>Card</option>
+                    </select>
+                </div>
+                <div id="creditDueWrap" class="hidden">
+                    <label for="paymentDueDate">Payment Due Date (for Credit)</label>
+                    <input type="date" id="paymentDueDate" />
+                </div>
+                <div>
+                    <label for="orderId">Order / Reference ID (optional)</label>
+                    <input id="orderId" placeholder="Your internal reference" />
+                </div>
+                <div>
+                    <label for="salesExecutive">Sales Executive</label>
+                    <select id="salesExecutive">
+                        <option value="">Select name</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="salesExecutivePhone">Sales Executive Mobile</label>
+                    <input id="salesExecutivePhone" placeholder="Auto-filled" readonly />
+                </div>
+                <div id="referralWrap" class="hidden">
+                    <label>Referral Customer</label>
+                    <div class="row-2">
+                        <input id="referralName" placeholder="Referral name" />
+                        <input id="referralMobile" placeholder="Referral mobile" />
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
 
-        <div class="section">
-          <div class="section-title">Items</div>
+            <div class="section">
+                <div class="section-title">Items</div>
+                <div class="table-wrap">
+                    <table id="itemsTable">
+                        <thead>
+                        <tr>
+                            <th style="width:40%">Item Name / Description</th>
+                            <th class="nowrap">QTY</th>
+                            <th class="nowrap">Rate / Unit</th>
+                            <th class="nowrap right">Line Total</th>
+                            <th class="no-print"></th>
+                        </tr>
+                        </thead>
+                        <tbody id="itemsBody"></tbody>
+                    </table>
+                </div>
+                <div class="actions no-print">
+                    <button class="btn btn-ghost" id="addRowBtn" type="button">+ Add item</button>
+                </div>
+                <div class="totals">
+                    <div class="muted">Grand Total</div>
+                    <div class="grand" id="grandTotal">₹0.00</div>
+                </div>
+            </div>
 
-          <div class="table-wrap">
-            <table id="itemsTable">
-              <thead>
-                <tr>
-                  <th style="width:40%">Item Name / Description</th>
-                  <th class="nowrap">QTY</th>
-                  <th class="nowrap">Rate / Unit</th>
-                  <th class="nowrap right">Line Total</th>
-                  <th class="no-print"></th>
-                </tr>
-              </thead>
-              <tbody id="itemsBody"></tbody>
-            </table>
-          </div>
+            <div class="section">
+                <div class="section-title">Comments / Special Requests</div>
+                <textarea id="comments" placeholder="Write any special instructions, delivery notes, or requests..."></textarea>
+            </div>
 
-          <div class="actions no-print">
-            <button class="btn btn-ghost" id="addRowBtn" type="button">+ Add item</button>
-          </div>
-
-          <div class="totals">
-            <div class="muted">Grand Total</div>
-            <div class="grand" id="grandTotal">₹0.00</div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">Comments / Special Requests</div>
-          <textarea id="comments" placeholder="Write any special instructions, delivery notes, or requests..."></textarea>
-        </div>
-
-        <div class="actions no-print">
-          <button class="btn btn-primary" id="submitBtn" type="button">
-            Submit to Google Sheet <span id="spinner"></span>
-          </button>
-          <button class="btn btn-ghost" id="previewBtn" type="button">Preview Invoice</button>
-          <button class="btn btn-accent" id="printBtn" type="button">Print Invoice PDF</button>
-          <button class="btn btn-ghost" id="resetBtn" type="button">Reset</button>
-        </div>
-      </div>
+            <div class="actions no-print">
+                <button class="btn btn-primary" id="submitBtn" type="button">
+                    Submit to Google Sheet <span id="spinner"></span>
+                </button>
+                <button class="btn btn-ghost" id="previewBtn" type="button">Preview Invoice</button>
+                <button class="btn btn-accent" id="printBtn" type="button">Print Invoice PDF</button>
+                <button class="btn btn-ghost" id="resetBtn" type="button">Reset</button>
+            </div>
+        </section>
     </main>
-  </div>
+</div>
 
-  <!-- Invoice Modal -->
-  <div id="invoiceModal" class="modal no-print" aria-hidden="true">
+<!-- Invoice Modal -->
+<div id="invoiceModal" class="modal no-print" aria-hidden="true">
     <div class="modalCard">
-      <div class="modalHeader">
-        <strong>Invoice Preview</strong>
-        <div>
-          <button class="btn btn-ghost" id="closePreview">Close</button>
-          <button class="btn btn-accent" id="printFromPreview">Print</button>
+        <div class="modalHeader">
+            <strong>Invoice Preview</strong>
+            <div>
+                <button class="btn btn-ghost" id="closePreview">Close</button>
+                <button class="btn btn-accent" id="printFromPreview">Print</button>
+            </div>
         </div>
-      </div>
-      <div class="modalBody" id="invoiceContent"></div>
+        <div class="modalBody" id="invoiceContent"></div>
     </div>
-  </div>
+</div>
 
-  <!-- Toast -->
-  <div id="toast"></div>
+<!-- Toast -->
+<div id="toast"></div>
 
-  <!-- Install banner -->
-  <div id="installBanner">
+<!-- Install banner -->
+<div id="installBanner">
     <span>Add an app icon JSK Sales to your Homescreen for quick access</span>
-    <button id="a2hsBtn" class="btn btn-ghost" style="background:#fff;color:#4f80dc;border:0">Install</button>
-    <button id="a2hsDismiss" class="btn btn-ghost" style="background:#fff;color:#e65555;border:0">Not now</button>
-  </div>
+    <button id="a2hsBtn" class="btn">Install</button>
+    <button id="a2hsDismiss" class="btn">Not now</button>
+</div>
 
-  <iframe id="printFrame" style="position:absolute; left:-9999px; width:0; height:0; border:0"></iframe>
+<iframe id="printFrame" style="position:absolute; left:-9999px; width:0; height:0; border:0"></iframe>
 
-  <script>
-    // PWA registration
+<script>
+    /* ===== PWA registration + A2HS ===== */
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(console.error);
-      });
+        window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(console.error); });
     }
-    // A2HS prompt handling
     let deferredPrompt;
     const installBanner = document.getElementById('installBanner');
     const a2hsBtn = document.getElementById('a2hsBtn');
     const a2hsDismiss = document.getElementById('a2hsDismiss');
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault(); deferredPrompt = e; installBanner.style.display = 'flex';
-    });
-    a2hsBtn?.addEventListener('click', async () => {
-      if (!deferredPrompt) return;
-      installBanner.style.display = 'none';
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice; deferredPrompt = null;
-    });
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBanner.style.display = 'flex'; });
+    a2hsBtn?.addEventListener('click', async () => { if (!deferredPrompt) return; installBanner.style.display = 'none'; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; });
     a2hsDismiss?.addEventListener('click', () => installBanner.style.display = 'none');
     window.addEventListener('appinstalled', () => installBanner.style.display = 'none');
-    // iOS hint
     const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
     const isInStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     if (isIOS && !isInStandalone) {
-      installBanner.style.display = 'flex';
-      installBanner.querySelector('span').textContent = 'Add to Home Screen: tap Share (↑) and choose “Add to Home Screen”.';
-      document.getElementById('a2hsBtn').style.display = 'none';
-      document.getElementById('a2hsDismiss').textContent = 'OK';
+        installBanner.style.display = 'flex';
+        installBanner.querySelector('span').textContent = 'Add to Home Screen: tap Share (↑) and choose “Add to Home Screen”.';
+        document.getElementById('a2hsBtn').style.display = 'none';
+        document.getElementById('a2hsDismiss').textContent = 'OK';
     }
 
+    /* ===== Company text ===== */
     const COMPANY = { name: "JSK Associates", details: "Moosa Peedika Road, Mekkunu • +91 95448 91890 • jskassociate24@gmail.com", short: "JSK" };
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxQ4iWnyAlYhWqi3fCthrqn-eOkY1A-Sr6qBqynuXHgKeUjSAMb9ygt_yZvGn8JQv8CXA/exec";
-
-    // Sales executive map
-    const SE_PHONES = {
-      "Jasneem": "9544891890",
-      "Jencil": "8139088748",
-      "Anurag": "8139033768",
-      "Salam": "8129655770",
-      "Midlaj": "8129044770"
-    };
-
-    // Branding
     document.getElementById("companyName").textContent = COMPANY.name;
     document.getElementById("companyDetails").textContent = COMPANY.details;
-    document.getElementById("fallbackLogo").textContent = COMPANY.short;
 
+    /* ===== CONFIG (locations + URLs + same execs both sides) ===== */
+    const CONFIG = {
+        mekkunnu: {
+            ordersUrl: "https://script.google.com/macros/s/AKfycbxQ4iWnyAlYhWqi3fCthrqn-eOkY1A-Sr6qBqynuXHgKeUjSAMb9ygt_yZvGn8JQv8CXA/exec",
+            executives: {
+                "Jasneem": "9544891890",
+                "Jencil": "8139088748",
+                "Anurag": "8139033768",
+                "Salam": "8129655770",
+                "Midlaj": "8129044770"
+            }
+        },
+        vadakara: {
+            ordersUrl: "https://script.google.com/macros/s/AKfycbxw9j_vwms_KCymLxRvas6ch-hanCWrVeb8ygfOzf6iGtNM7hPAZnkeuDHdq5C5kPCr/exec",
+            executives: {
+                "Jasneem": "9544891890",
+                "Jencil": "8139088748",
+                "Anurag": "8139033768",
+                "Salam": "8129655770",
+                "Midlaj": "8129044770"
+            }
+        }
+    };
+
+    /* ===== Location selector ===== */
+    const locationSelect = document.getElementById('locationSelect');
+    locationSelect.value = localStorage.getItem('jsk_location') || 'mekkunnu';
+    locationSelect.addEventListener('change', () => {
+        localStorage.setItem('jsk_location', locationSelect.value);
+        populateExecutives();
+    });
+
+    /* ===== Sales exec dropdown & phone (per location) ===== */
+    const seSelect = document.getElementById("salesExecutive");
+    const sePhone = document.getElementById("salesExecutivePhone");
+    function populateExecutives(){
+        const loc = localStorage.getItem('jsk_location') || 'mekkunnu';
+        const map = CONFIG[loc].executives || {};
+        seSelect.innerHTML = '<option value="">Select name</option>' + Object.keys(map).map(n=>`<option>${n}</option>`).join('');
+        sePhone.value='';
+    }
+    function updateSEPhone(){
+        const loc = localStorage.getItem('jsk_location') || 'mekkunnu';
+        const map = CONFIG[loc].executives || {};
+        sePhone.value = map[seSelect.value] || "";
+    }
+    seSelect.addEventListener("change", updateSEPhone);
+    populateExecutives();
+
+    /* ===== Helpers ===== */
     const fmtCurrency = (n) => new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:2}).format(isFinite(n)?Number(n):0);
     const parseNum = (v) => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
 
-    // Payment Terms → show due date when Credit
     const paymentTerms = document.getElementById("paymentTerms");
     const creditWrap = document.getElementById("creditDueWrap");
     const paymentDueDate = document.getElementById("paymentDueDate");
-    function updateCreditVisibility(){
-      const isCredit = paymentTerms.value === "Credit";
-      creditWrap.classList.toggle("hidden", !isCredit);
-      if (!isCredit) paymentDueDate.value = "";
-    }
-    paymentTerms.addEventListener("change", updateCreditVisibility);
-    updateCreditVisibility();
+    function updateCreditVisibility(){ const isCredit = paymentTerms.value === "Credit"; creditWrap.classList.toggle("hidden", !isCredit); if (!isCredit) paymentDueDate.value = ""; }
+    paymentTerms.addEventListener("change", updateCreditVisibility); updateCreditVisibility();
 
-    // Customer Category → show referral block when "referral customer"
     const customerCategory = document.getElementById("customerCategory");
     const referralWrap = document.getElementById("referralWrap");
     const referralName = document.getElementById("referralName");
     const referralMobile = document.getElementById("referralMobile");
-    function updateReferralVisibility(){
-      const show = (customerCategory.value || '').toLowerCase() === 'referral customer';
-      referralWrap.classList.toggle("hidden", !show);
-      if (!show) { referralName.value = ""; referralMobile.value = ""; }
-    }
-    customerCategory.addEventListener("change", updateReferralVisibility);
-    updateReferralVisibility();
-
-    // Sales Executive → auto phone
-    const seSelect = document.getElementById("salesExecutive");
-    const sePhone = document.getElementById("salesExecutivePhone");
-    function updateSEPhone(){ sePhone.value = SE_PHONES[seSelect.value] || ""; }
-    seSelect.addEventListener("change", updateSEPhone);
+    function updateReferralVisibility(){ const show = (customerCategory.value || '').toLowerCase() === 'referral customer'; referralWrap.classList.toggle("hidden", !show); if (!show) { referralName.value = ""; referralMobile.value = ""; } }
+    customerCategory.addEventListener("change", updateReferralVisibility); updateReferralVisibility();
 
     // Dynamic items
     const itemsBody = document.getElementById("itemsBody");
     const grandTotalEl = document.getElementById("grandTotal");
     const addRowBtn = document.getElementById("addRowBtn");
     let rowCount = 0;
-
     function createRow(){
-      const idx = ++rowCount;
-      const tr = document.createElement("tr");
-      tr.dataset.idx = idx;
-      tr.innerHTML = `
-        <td><input placeholder="Item name / description" name="itemName_${idx}" /></td>
-        <td class="qty"><input inputmode="decimal" name="qty_${idx}" placeholder="0" /></td>
-        <td class="rate"><input inputmode="decimal" name="rate_${idx}" placeholder="0.00" /></td>
-        <td class="total right"><input name="total_${idx}" placeholder="0.00" readonly /></td>
-        <td class="no-print right"><button type="button" class="btn btn-ghost" data-action="remove">✕</button></td>`;
-      const [nameEl, qtyEl, rateEl, totalEl] = tr.querySelectorAll("input");
-
-      // Enforce numeric & non-negative for qty/rate
-      function sanitizeNumber(el){
-        el.value = el.value.replace(/[^\d.]/g,'');
-        const num = parseFloat(el.value);
-        if (isNaN(num) || num < 0) el.value = '';
-      }
-      function recalcLine(){
-        const total = parseNum(qtyEl.value) * parseNum(rateEl.value);
-        totalEl.value = isFinite(total) ? total.toFixed(2) : '';
-        recalcGrand();
-        if (tr === itemsBody.lastElementChild && (nameEl.value || qtyEl.value || rateEl.value)) createRow();
-      }
-      qtyEl.addEventListener("input", () => { sanitizeNumber(qtyEl); recalcLine(); });
-      rateEl.addEventListener("input", () => { sanitizeNumber(rateEl); recalcLine(); });
-      nameEl.addEventListener("input", recalcLine);
-
-      tr.addEventListener("click", (e)=>{
-        if (e.target?.dataset?.action === "remove") {
-          const wasLast = tr === itemsBody.lastElementChild;
-          tr.remove(); recalcGrand();
-          if (!itemsBody.children.length) createRow();
-          else if (wasLast) {
-            const last = itemsBody.lastElementChild;
-            if (Array.from(last.querySelectorAll("input")).some(i=>i.value)) createRow();
-          }
-        }
-      });
-      itemsBody.appendChild(tr);
+        const idx = ++rowCount;
+        const tr = document.createElement("tr");
+        tr.dataset.idx = idx;
+        tr.innerHTML = `
+      <td><input placeholder="Item name / description" name="itemName_${idx}" /></td>
+      <td class="qty"><input inputmode="decimal" name="qty_${idx}" placeholder="0" /></td>
+      <td class="rate"><input inputmode="decimal" name="rate_${idx}" placeholder="0.00" /></td>
+      <td class="total right"><input name="total_${idx}" placeholder="0.00" readonly /></td>
+      <td class="no-print right"><button type="button" class="btn btn-ghost" data-action="remove">✕</button></td>`;
+        const [nameEl, qtyEl, rateEl, totalEl] = tr.querySelectorAll("input");
+        function sanitizeNumber(el){ el.value = el.value.replace(/[^\d.]/g,''); const num = parseFloat(el.value); if (isNaN(num) || num < 0) el.value = ''; }
+        function recalcLine(){ const total = parseNum(qtyEl.value) * parseNum(rateEl.value); totalEl.value = isFinite(total) ? total.toFixed(2) : ''; recalcGrand(); if (tr === itemsBody.lastElementChild && (nameEl.value || qtyEl.value || rateEl.value)) createRow(); }
+        qtyEl.addEventListener("input", () => { sanitizeNumber(qtyEl); recalcLine(); });
+        rateEl.addEventListener("input", () => { sanitizeNumber(rateEl); recalcLine(); });
+        nameEl.addEventListener("input", recalcLine);
+        tr.addEventListener("click", (e)=>{ if (e.target?.dataset?.action === "remove") { const wasLast = tr === itemsBody.lastElementChild; tr.remove(); recalcGrand(); if (!itemsBody.children.length) createRow(); else if (wasLast) { const last = itemsBody.lastElementChild; if (Array.from(last.querySelectorAll("input")).some(i=>i.value)) createRow(); } }});
+        itemsBody.appendChild(tr);
     }
-    function recalcGrand(){
-      let grand=0;
-      itemsBody.querySelectorAll("tr").forEach(tr => grand += parseNum(tr.querySelector('input[name^="total_"]').value));
-      grandTotalEl.textContent = fmtCurrency(grand);
-    }
+    function recalcGrand(){ let grand=0; itemsBody.querySelectorAll("tr").forEach(tr => grand += parseNum(tr.querySelector('input[name^="total_"]').value)); grandTotalEl.textContent = fmtCurrency(grand); }
     addRowBtn.addEventListener("click", ()=> createRow());
     for (let i=0;i<3;i++) createRow();
 
-    // Toast + Spinner helpers
+    // Toast + Spinner
     const toast = document.getElementById("toast");
     const spinner = document.getElementById("spinner");
     const submitBtn = document.getElementById("submitBtn");
+    function showToast(message, success = true) { toast.textContent = message; toast.style.background = success ? "#16a34a" : "#dc3545"; toast.style.display = "block"; clearTimeout(showToast._t); showToast._t = setTimeout(() => { toast.style.display = "none"; }, 3000); }
+    function disableSubmit(disabled) { submitBtn.disabled = disabled; spinner.style.display = disabled ? "inline-block" : "none"; }
+    function isValidPhone(phone) { return /^[6-9]\d{9}$/.test(phone); }
 
-    function showToast(message, success = true) {
-      toast.textContent = message;
-      toast.style.background = success ? "#16a34a" : "#dc3545";
-      toast.style.display = "block";
-      clearTimeout(showToast._t);
-      showToast._t = setTimeout(() => { toast.style.display = "none"; }, 3000);
-    }
-    function disableSubmit(disabled) {
-      submitBtn.disabled = disabled;
-      spinner.style.display = disabled ? "inline-block" : "none";
-    }
-    function isValidPhone(phone) {
-      return /^[6-9]\d{9}$/.test(phone); // 10-digit Indian mobile
-    }
-
-    // Reset (also used after success)
+    // Reset
     function hardReset(){
-      document.querySelectorAll("input, textarea, select").forEach(el=>{
-        if (el.type === "datetime-local" || el.type === "date") el.value = "";
-        else if (el.tagName === "SELECT") el.selectedIndex = 0;
-        else el.value = "";
-      });
-      itemsBody.innerHTML=""; rowCount=0; for (let i=0;i<3;i++) createRow(); recalcGrand();
-      updateCreditVisibility(); updateReferralVisibility(); updateSEPhone();
+        document.querySelectorAll("#mode_orders input, #mode_orders textarea, #mode_orders select").forEach(el=>{
+            if (el.type === "datetime-local" || el.type === "date") el.value = "";
+            else if (el.tagName === "SELECT") el.selectedIndex = 0;
+            else el.value = "";
+        });
+        itemsBody.innerHTML=""; rowCount=0; for (let i=0;i<3;i++) createRow(); recalcGrand();
+        updateCreditVisibility(); updateReferralVisibility(); updateSEPhone();
     }
     document.getElementById("resetBtn").addEventListener("click", hardReset);
 
-    // Collect payload
+    // Collect order payload
     function collectData(){
-      const items=[];
-      itemsBody.querySelectorAll("tr").forEach(tr=>{
-        const idx=tr.dataset.idx;
-        const name = tr.querySelector(`input[name="itemName_${idx}"]`)?.value?.trim()||"";
-        const qty  = parseNum(tr.querySelector(`input[name="qty_${idx}"]`)?.value||"0");
-        const rate = parseNum(tr.querySelector(`input[name="rate_${idx}"]`)?.value||"0");
-        const total= parseNum(tr.querySelector(`input[name="total_${idx}"]`)?.value||"0");
-        if (name || qty>0 || rate>0 || total>0) items.push({name,qty,rate,total});
-      });
-      const grand = items.reduce((s,i)=>s+(i.total||0),0);
-      const clientToken = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ('tok-' + Date.now() + '-' + Math.random().toString(16).slice(2));
-      return {
-        clientToken,
-        orderId: document.getElementById("orderId").value.trim(),
-        customerCategory: document.getElementById("customerCategory").value,
-        referralName: document.getElementById("referralName").value.trim(),
-        referralMobile: document.getElementById("referralMobile").value.trim(),
-        salesExecutive: document.getElementById("salesExecutive").value,
-        salesExecutivePhone: document.getElementById("salesExecutivePhone").value,
-        customerName: document.getElementById("customerName").value.trim(),
-        contactNumber: document.getElementById("contactNumber").value.trim(),
-        place: document.getElementById("place").value.trim(),
-        deliveryDateTime: document.getElementById("deliveryDateTime").value,
-        paymentTerms: document.getElementById("paymentTerms").value,
-        paymentDueDate: document.getElementById("paymentDueDate").value,
-        comments: document.getElementById("comments").value.trim(),
-        items, grandTotal: grand
-      };
+        const items=[]; itemsBody.querySelectorAll("tr").forEach(tr=>{
+            const idx=tr.dataset.idx;
+            const name = tr.querySelector(`input[name="itemName_${idx}"]`)?.value?.trim()||"";
+            const qty  = parseNum(tr.querySelector(`input[name="qty_${idx}"]`)?.value||"0");
+            const rate = parseNum(tr.querySelector(`input[name="rate_${idx}"]`)?.value||"0");
+            const total= parseNum(tr.querySelector(`input[name="total_${idx}"]`)?.value||"0");
+            if (name || qty>0 || rate>0 || total>0) items.push({name,qty,rate,total});
+        });
+        const grand = items.reduce((s,i)=>s+(i.total||0),0);
+        const clientToken = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ('tok-' + Date.now() + '-' + Math.random().toString(16).slice(2));
+        return {
+            clientToken,
+            orderId: document.getElementById("orderId").value.trim(),
+            customerCategory: document.getElementById("customerCategory").value,
+            referralName: document.getElementById("referralName").value.trim(),
+            referralMobile: document.getElementById("referralMobile").value.trim(),
+            salesExecutive: document.getElementById("salesExecutive").value,
+            salesExecutivePhone: document.getElementById("salesExecutivePhone").value,
+            customerName: document.getElementById("customerName").value.trim(),
+            contactNumber: document.getElementById("contactNumber").value.trim(),
+            place: document.getElementById("place").value.trim(),
+            deliveryDateTime: document.getElementById("deliveryDateTime").value,
+            paymentTerms: document.getElementById("paymentTerms").value,
+            paymentDueDate: document.getElementById("paymentDueDate").value,
+            comments: document.getElementById("comments").value.trim(),
+            items, grandTotal: grand
+        };
     }
 
-    // Submit with validation, spinner, idempotency, reset-on-success
+    // Submit with strong validations and location-aware URL
+    async function postJSON(url, payload){
+        const res = await fetch(url, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+        return res.json().catch(()=>({ok:false}));
+    }
+
+    function requireWhen(cond, ok, msg){ if(cond && !ok){ showToast(msg, false); return false; } return true; }
+
     document.getElementById("submitBtn").addEventListener("click", async ()=>{
-      const data = collectData();
+        const data = collectData();
 
-      if (!data.customerName || !data.contactNumber) {
-        showToast("Customer name and contact number are required.", false);
-        return;
-      }
-      if (!isValidPhone(data.contactNumber)) {
-        showToast("Please enter a valid 10-digit mobile number (India).", false);
-        return;
-      }
-      const badItem = data.items.find(it => isNaN(it.qty) || it.qty < 0 || isNaN(it.rate) || it.rate < 0);
-      if (badItem) {
-        showToast("Item Qty and Rate must be valid non-negative numbers.", false);
-        return;
-      }
+        // base required
+        if (!data.customerName) return showToast("Customer name is required.", false);
+        if (!data.contactNumber) return showToast("Customer contact number is required.", false);
+        if (!isValidPhone(data.contactNumber)) return showToast("Please enter a valid 10-digit mobile number (India).", false);
+        if (!data.salesExecutive) return showToast("Please select a Sales Executive.", false);
 
-      try {
-        disableSubmit(true);
-        const res = await fetch(WEB_APP_URL, {
-          method:"POST",
-          headers:{ "Content-Type":"text/plain;charset=utf-8" },
-          body: JSON.stringify(data)
-        });
-        const j = await res.json().catch(()=>({ok:false}));
-        if (j && j.ok) {
-          const note = j.dedup ? " (duplicate ignored)" : "";
-          showToast(`Order submitted! Order ID: ${j.orderId || "(n/a)"}${note}`, true);
-          hardReset();
-        } else {
-          showToast("Submission failed. Please try again.", false);
+        // conditional requireds
+        if (!requireWhen(data.paymentTerms==="Credit", data.paymentDueDate, "Please set a Payment Due Date for Credit.")) return;
+        const isReferral = (data.customerCategory||"").toLowerCase()==="referral customer";
+        if (!requireWhen(isReferral, data.referralName, "Referral name is required for Referral Customer.")) return;
+        if (!requireWhen(isReferral, data.referralMobile, "Referral mobile is required for Referral Customer.")) return;
+
+        // items sanity
+        const badItem = data.items.find(it => isNaN(it.qty) || it.qty < 0 || isNaN(it.rate) || it.rate < 0);
+        if (badItem) return showToast("Item Qty and Rate must be valid non-negative numbers.", false);
+
+        const loc = localStorage.getItem('jsk_location') || 'mekkunnu';
+        const url = CONFIG[loc]?.ordersUrl;
+        if(!url){ showToast("Orders URL not set for this location.", false); return; }
+
+        try {
+            disableSubmit(true);
+            const j = await postJSON(url, data);
+            if (j && j.ok) {
+                const note = j.dedup ? " (duplicate ignored)" : "";
+                showToast(`Order submitted! Order ID: ${j.orderId || "(n/a)"}${note}`, true);
+                hardReset();
+            } else {
+                showToast("Submission failed. Please try again.", false);
+            }
+        } catch (err) {
+            showToast("Network error during submission.", false);
+        } finally {
+            disableSubmit(false);
         }
-      } catch (err) {
-        showToast("Network error during submission.", false);
-      } finally {
-        disableSubmit(false);
-      }
     });
 
-    // Minimal invoice (no company details)
+    // Minimal invoice
     function buildInvoiceHTML_Min(data){
-      const rows = data.items.map(it => `
-        <tr>
-          <td>${it.name || "-"}</td>
-          <td class="right">${it.qty || 0}</td>
-          <td class="right">${fmtCurrency(it.rate || 0)}</td>
-          <td class="right">${fmtCurrency(it.total || 0)}</td>
-        </tr>
-      `).join("");
-      return `
-        <div class="invMini">
-          <h2>Invoice</h2>
-          <div class="invRow"><strong>Sales Executive:</strong> <span>${data.salesExecutive || "-"}</span></div>
-          <div class="invRow"><strong>Mobile:</strong> <span>${data.salesExecutivePhone || "-"}</span></div>
-          <table class="invTable" style="margin-top:8px">
-            <thead><tr><th>Item</th><th class="right">Qty</th><th class="right">Rate</th><th class="right">Amount</th></tr></thead>
-            <tbody>${rows}</tbody>
-          </table>
-          <div class="invRow" style="justify-content:flex-end; gap:12px; margin-top:8px">
-            <div class="muted">Grand Total</div>
-            <div class="grand">${fmtCurrency(data.grandTotal)}</div>
-          </div>
-          <div style="margin-top:8px"><strong>Comments</strong><br/><div style="white-space:pre-wrap">${data.comments || '-'}</div></div>
+        const rows = data.items.map(it => `
+      <tr>
+        <td>${it.name || "-"}</td>
+        <td class="right">${it.qty || 0}</td>
+        <td class="right">${fmtCurrency(it.rate || 0)}</td>
+        <td class="right">${fmtCurrency(it.total || 0)}</td>
+      </tr>
+    `).join("");
+        return `
+      <div class="invMini">
+        <h2>Invoice</h2>
+        <div class="invRow"><strong>Sales Executive:</strong> <span>${data.salesExecutive || "-"}</span></div>
+        <div class="invRow"><strong>Mobile:</strong> <span>${data.salesExecutivePhone || "-"}</span></div>
+        <table class="invTable" style="margin-top:8px">
+          <thead><tr><th>Item</th><th class="right">Qty</th><th class="right">Rate</th><th class="right">Amount</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <div class="invRow" style="justify-content:flex-end; gap:12px; margin-top:8px">
+          <div class="muted">Grand Total</div>
+          <div class="grand">${fmtCurrency(data.grandTotal)}</div>
         </div>
-      `;
+        <div style="margin-top:8px"><strong>Comments</strong><br/><div style="white-space:pre-wrap">${data.comments || '-'}</div></div>
+      </div>
+    `;
     }
-
-    // Preview & print
     const modal = document.getElementById('invoiceModal');
     const invoiceContent = document.getElementById('invoiceContent');
-    document.getElementById('previewBtn').addEventListener('click', () => {
-      invoiceContent.innerHTML = buildInvoiceHTML_Min(collectData());
-      modal.classList.add('open');
-    });
+    document.getElementById('previewBtn').addEventListener('click', () => { invoiceContent.innerHTML = buildInvoiceHTML_Min(collectData()); modal.classList.add('open'); });
     document.getElementById('closePreview').addEventListener('click', ()=> modal.classList.remove('open'));
     function printInvoice(){
-      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice</title>
-      <style>
-        body{font-family:system-ui,Segoe UI,Arial;margin:16px}
-        .invTable{width:100%; border-collapse:collapse}
-        .invTable th, .invTable td{border-bottom:1px solid #ddd; padding:6px}
-        .right{text-align:right}
-        .grand{font-weight:800; font-size:18px}
-      </style>
+        const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice</title>
+      <style>body{font-family:system-ui,Segoe UI,Arial;margin:16px}.invTable{width:100%; border-collapse:collapse}.invTable th, .invTable td{border-bottom:1px solid #ddd; padding:6px}.right{text-align:right}.grand{font-weight:800; font-size:18px}</style>
       </head><body>${buildInvoiceHTML_Min(collectData())}</body></html>`;
-      const frame = document.getElementById('printFrame');
-      const doc = frame.contentWindow.document;
-      doc.open(); doc.write(html); doc.close();
-      frame.onload = () => frame.contentWindow.focus();
-      frame.contentWindow.print();
+        const frame = document.getElementById('printFrame'); const doc = frame.contentWindow.document;
+        doc.open(); doc.write(html); doc.close(); frame.onload = () => frame.contentWindow.focus(); frame.contentWindow.print();
     }
     document.getElementById('printBtn').addEventListener('click', printInvoice);
     document.getElementById('printFromPreview').addEventListener('click', printInvoice);
-  </script>
+</script>
 </body>
 </html>
