@@ -29,6 +29,7 @@
 
     label{font-size:12px; color:var(--muted); display:block; margin-bottom:6px}
     input, select, textarea{width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:#fff; font-size:14px}
+    input[readonly]{background:#fafafa}
     textarea{min-height:88px; resize:vertical}
 
     .section{margin-top:20px}
@@ -45,6 +46,7 @@
     .btn-primary{background:var(--primary); color:#fff}
     .btn-accent{background:var(--accent); color:#fff}
     .btn-ghost{background:#fff; color:var(--text); border:1px solid var(--border)}
+    .btn[disabled]{opacity:.7; cursor:not-allowed}
 
     .totals{display:flex; justify-content:flex-end; gap:16px; align-items:center; margin-top:12px}
     .grand{font-size:18px; font-weight:800}
@@ -65,6 +67,11 @@
     .invRow{display:flex; justify-content:space-between; gap:12px; margin:6px 0}
     .invTable{width:100%; border-collapse: collapse; border:1px solid var(--border)}
     .invTable th, .invTable td{border-bottom:1px solid var(--border); padding:8px}
+
+    /* Toast + Spinner */
+    #toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px 16px; border-radius:8px; font-size:14px; display:none; z-index:9999}
+    #spinner{display:none; width:16px; height:16px; border:2px solid #ffffff; border-top:2px solid transparent; border-radius:50%; animation:spin 1s linear infinite; margin-left:8px; vertical-align:middle}
+    @keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
 
     @media print{ body{background:#fff} .no-print{display:none !important} }
   </style>
@@ -91,7 +98,7 @@
           </div>
           <div>
             <label for="contactNumber">Customer Contact Number</label>
-            <input required id="contactNumber" placeholder="Customer Contact Number" />
+            <input required id="contactNumber" placeholder="10-digit mobile (India)" inputmode="numeric" />
           </div>
 
           <div>
@@ -198,7 +205,9 @@
         </div>
 
         <div class="actions no-print">
-          <button class="btn btn-primary" id="submitBtn" type="button">Submit to Google Sheet</button>
+          <button class="btn btn-primary" id="submitBtn" type="button">
+            Submit to Google Sheet <span id="spinner"></span>
+          </button>
           <button class="btn btn-ghost" id="previewBtn" type="button">Preview Invoice</button>
           <button class="btn btn-accent" id="printBtn" type="button">Print Invoice PDF</button>
           <button class="btn btn-ghost" id="resetBtn" type="button">Reset</button>
@@ -221,13 +230,16 @@
     </div>
   </div>
 
+  <!-- Toast -->
+  <div id="toast"></div>
+
   <iframe id="printFrame" style="position:absolute; left:-9999px; width:0; height:0; border:0"></iframe>
 
   <script>
     const COMPANY = { name: "JSK Associates", details: "Moosa Peedika Road, Mekkunu • +91 95448 91890 • jskassociate24@gmail.com", short: "JSK" };
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxQ4iWnyAlYhWqi3fCthrqn-eOkY1A-Sr6qBqynuXHgKeUjSAMb9ygt_yZvGn8JQv8CXA/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxQ4iWnyAlYhWqi3fCthrqn-eOkY1A-Sr6qBqynuXHgKeUjSAMb9ygt_yZvGn8JQv8CXA/exec"; // keep yours
 
-    // Sales executive map
+    // Sales executive map (matching your dropdown)
     const SE_PHONES = {
       "Jasneem": "9544891890",
       "Jencil": "8139088748",
@@ -262,7 +274,8 @@
     const referralName = document.getElementById("referralName");
     const referralMobile = document.getElementById("referralMobile");
     function updateReferralVisibility(){
-      const show = customerCategory.value === "referral customer";
+      // because your option text is "referral customer" (lowercase)
+      const show = (customerCategory.value || '').toLowerCase() === 'referral customer';
       referralWrap.classList.toggle("hidden", !show);
       if (!show) { referralName.value = ""; referralMobile.value = ""; }
     }
@@ -292,15 +305,23 @@
         <td class="total right"><input name="total_${idx}" placeholder="0.00" readonly /></td>
         <td class="no-print right"><button type="button" class="btn btn-ghost" data-action="remove">✕</button></td>`;
       const [nameEl, qtyEl, rateEl, totalEl] = tr.querySelectorAll("input");
+
+      // Enforce numeric & non-negative for qty/rate
+      function sanitizeNumber(el){
+        el.value = el.value.replace(/[^\d.]/g,'');
+        const num = parseFloat(el.value);
+        if (isNaN(num) || num < 0) el.value = '';
+      }
       function recalcLine(){
         const total = parseNum(qtyEl.value) * parseNum(rateEl.value);
-        totalEl.value = total.toFixed(2);
+        totalEl.value = isFinite(total) ? total.toFixed(2) : '';
         recalcGrand();
         if (tr === itemsBody.lastElementChild && (nameEl.value || qtyEl.value || rateEl.value)) createRow();
       }
-      qtyEl.addEventListener("input", recalcLine);
-      rateEl.addEventListener("input", recalcLine);
+      qtyEl.addEventListener("input", () => { sanitizeNumber(qtyEl); recalcLine(); });
+      rateEl.addEventListener("input", () => { sanitizeNumber(rateEl); recalcLine(); });
       nameEl.addEventListener("input", recalcLine);
+
       tr.addEventListener("click", (e)=>{
         if (e.target?.dataset?.action === "remove") {
           const wasLast = tr === itemsBody.lastElementChild;
@@ -322,8 +343,27 @@
     addRowBtn.addEventListener("click", ()=> createRow());
     for (let i=0;i<3;i++) createRow();
 
-    // Reset
-    document.getElementById("resetBtn").addEventListener("click", ()=>{
+    // Toast + Spinner helpers
+    const toast = document.getElementById("toast");
+    const spinner = document.getElementById("spinner");
+    const submitBtn = document.getElementById("submitBtn");
+
+    function showToast(message, success = true) {
+      toast.textContent = message;
+      toast.style.background = success ? "#28a745" : "#dc3545";
+      toast.style.display = "block";
+      setTimeout(() => { toast.style.display = "none"; }, 3000);
+    }
+    function disableSubmit(disabled) {
+      submitBtn.disabled = disabled;
+      spinner.style.display = disabled ? "inline-block" : "none";
+    }
+    function isValidPhone(phone) {
+      return /^[6-9]\d{9}$/.test(phone); // 10-digit Indian mobile
+    }
+
+    // Reset (also used after success)
+    function hardReset(){
       document.querySelectorAll("input, textarea, select").forEach(el=>{
         if (el.type === "datetime-local" || el.type === "date") el.value = "";
         else if (el.tagName === "SELECT") el.selectedIndex = 0;
@@ -331,7 +371,8 @@
       });
       itemsBody.innerHTML=""; rowCount=0; for (let i=0;i<3;i++) createRow(); recalcGrand();
       updateCreditVisibility(); updateReferralVisibility(); updateSEPhone();
-    });
+    }
+    document.getElementById("resetBtn").addEventListener("click", hardReset);
 
     // Collect payload
     function collectData(){
@@ -345,7 +386,9 @@
         if (name || qty>0 || rate>0 || total>0) items.push({name,qty,rate,total});
       });
       const grand = items.reduce((s,i)=>s+(i.total||0),0);
+      const clientToken = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ('tok-' + Date.now() + '-' + Math.random().toString(16).slice(2));
       return {
+        clientToken, // used server-side to prevent duplicates
         orderId: document.getElementById("orderId").value.trim(),
         customerCategory: document.getElementById("customerCategory").value,
         referralName: document.getElementById("referralName").value.trim(),
@@ -363,15 +406,46 @@
       };
     }
 
-    // Submit (simple, avoids preflight)
+    // Submit with validation, spinner, idempotency, reset-on-success
     document.getElementById("submitBtn").addEventListener("click", async ()=>{
       const data = collectData();
-      if (!data.customerName || !data.contactNumber) { alert("Please fill Customer Name and Contact Number."); return; }
+
+      // Enhanced validation
+      if (!data.customerName || !data.contactNumber) {
+        showToast("Customer name and contact number are required.", false);
+        return;
+      }
+      if (!isValidPhone(data.contactNumber)) {
+        showToast("Please enter a valid 10-digit mobile number (India).", false);
+        return;
+      }
+      const badItem = data.items.find(it => isNaN(it.qty) || it.qty < 0 || isNaN(it.rate) || it.rate < 0);
+      if (badItem) {
+        showToast("Item Qty and Rate must be valid non-negative numbers.", false);
+        return;
+      }
+
       try {
-        const res = await fetch(WEB_APP_URL, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify(data) });
-        let msg="Submitted!"; try{ const j=await res.json(); msg = j.ok ? ("Order submitted! OrderID: " + (j.orderId||"(n/a)")) : ("Server error: " + JSON.stringify(j)); }catch(e){}
-        alert(msg);
-      } catch(err){ alert("Network error: "+err); }
+        disableSubmit(true);
+        const res = await fetch(WEB_APP_URL, {
+          method:"POST",
+          headers:{ "Content-Type":"text/plain;charset=utf-8" }, // avoids preflight
+          body: JSON.stringify(data)
+        });
+
+        const j = await res.json().catch(()=>({ok:false}));
+        if (j && j.ok) {
+          const note = j.dedup ? " (duplicate ignored)" : "";
+          showToast(`Order submitted! Order ID: ${j.orderId || "(n/a)"}${note}`, true);
+          hardReset(); // reset after success
+        } else {
+          showToast("Submission failed. Please try again.", false);
+        }
+      } catch (err) {
+        showToast("Network error during submission.", false);
+      } finally {
+        disableSubmit(false);
+      }
     });
 
     // Minimal invoice (no company details)
