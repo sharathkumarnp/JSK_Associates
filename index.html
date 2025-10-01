@@ -446,6 +446,11 @@
         if (!isValidPhone(data.contactNumber)) return showToast("Please enter a valid 10-digit mobile number (India).", false);
         if (!data.salesExecutive) return showToast("Please select a Sales Executive.", false);
 
+        // NEW: at least one item
+        if (!Array.isArray(data.items) || data.items.length === 0) {
+            return showToast("Add at least one item before submitting.", false);
+        }
+
         // conditional requireds
         if (!requireWhen(data.paymentTerms==="Credit", data.paymentDueDate, "Please set a Payment Due Date for Credit.")) return;
         const isReferral = (data.customerCategory||"").toLowerCase()==="referral customer";
